@@ -2,4 +2,4 @@
 // export const storageUrl = 'http://localhost:5000/storage'
 
 export const apiUrl = 'https://server.oorbis.top/api'
-export const storageUrl = 'https://server.oorbis.top/public'
+export const storageUrl = 'https://server.oorbis.top'

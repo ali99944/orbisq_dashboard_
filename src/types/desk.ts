@@ -1,4 +1,3 @@
-import { Branch } from "./branch"
 import { Customer } from "./customer"
 
 export enum DeskStatus {
@@ -45,9 +44,6 @@ export interface Desk {
     needs_cleaning?: boolean
     is_under_maintenance?: boolean
     maintenance_notes?: string
-
-    branch_id: number | null
-    branch: Branch | null
 }
 
 export type DeskFormData = Omit<Desk, 'id' | 'shop_id' | 'created_at' | 'updated_at' | 'qrcode' | 'qrcode_url' | 'customer' | 'status'>
@@ -70,6 +66,4 @@ export const initialDeskFormData: DeskFormData = {
     needs_cleaning: false,
     is_under_maintenance: false,
     maintenance_notes: '',
-    branch_id: null,
-    branch: null
 }

@@ -7,7 +7,6 @@ import React, { useState, useMemo, useEffect, ChangeEvent, FormEvent } from 'rea
 import { useGetQuery, useMutationAction } from '../../hooks/queries-actions';
 import type { Desk, DeskFormData } from '../../types/desk'; // Ensure Branch is exported from desk.ts or imported separately
 import { initialDeskFormData } from '../../types/desk';
-import type { Customer } from '../../types/customer';
 import type { ColumnDefinition } from '../../components/ui/data-table';
 import Toolbar from '../../components/ui/toolbar';
 import DataTable from '../../components/ui/data-table';
@@ -15,15 +14,11 @@ import Button from '../../components/ui/button';
 import Modal from '../../components/ui/modal';
 import Alert from '../../components/ui/alert';
 import Input from '../../components/ui/input';
-import TextArea from '../../components/ui/textarea'; // Import TextArea
-import Switch from '../../components/ui/switch';     // Import Switch
-import SearchableSelect, { SelectOption } from '../../components/ui/searchable-select';
 import { getImageLink } from '../../lib/storage';
 // --- End Relative Imports ---
 
-import { Plus, Edit, Trash2, QrCode, UserCheck, CheckCircle, Clock, Lock, HelpCircle, Save, ArrowDownToLine, MapPin, X } from 'lucide-react'; // Added MapPin and X
+import { Plus, Edit, Trash2, QrCode, UserCheck, CheckCircle, Clock, Lock, HelpCircle, Save, ArrowDownToLine, X } from 'lucide-react'; // Added MapPin and X
 import StatusChangeModal from './status-change-modal'; // Assuming this exists
-import { Branch } from '../../types/branch';
 import { AxiosError } from 'axios';
 
 // --- Helper Functions ---
@@ -57,30 +52,17 @@ const DesksPage: React.FC = () => {
     });
     const desks = desksResponse || []; // Ensure desks is always an array
 
-    const { data: customersResponse, isLoading: isLoadingCustomers } = useGetQuery<Customer[]>({
-        key: ['customers'],
-        url: 'customers?select=id,name,phone_number', // Assuming this returns an array of customers
-    });
-    const customerOptions: SelectOption[] = useMemo(() =>
-        customersResponse?.map(c => ({
-            value: c.id,
-            label: `${c.name} (${c.phone_number || 'لا يوجد هاتف'})`
-        })) || [],
-        [customersResponse]
-    );
-
-    const { data: branchesResponse, isLoading: isLoadingBranches } = useGetQuery<Branch[]>({ // Fetch branches
-        key: ['branches'],
-        url: 'branches?select=id,name', // Fetch only id and name for select
-    });
-    const branchOptions: SelectOption[] = useMemo(() =>
-        branchesResponse?.map(b => ({
-            value: b.id,
-            label: b.name,
-        })) || [],
-        [branchesResponse]
-    );
-
+    // const { data: customersResponse, isLoading: isLoadingCustomers } = useGetQuery<Customer[]>({
+    //     key: ['customers'],
+    //     url: 'customers?select=id,name,phone_number', // Assuming this returns an array of customers
+    // });
+    // const customerOptions: SelectOption[] = useMemo(() =>
+    //     customersResponse?.map(c => ({
+    //         value: c.id,
+    //         label: `${c.name} (${c.phone_number || 'لا يوجد هاتف'})`
+    //     })) || [],
+    //     [customersResponse]
+    // );
     // --- Mutations ---
     const { mutateAsync: saveDesk, isPending: isSaving } = useMutationAction<Desk, Partial<DeskFormData>>({
         url: 'desks',
@@ -128,8 +110,8 @@ const DesksPage: React.FC = () => {
                 needs_cleaning: editingDesk.needs_cleaning || false,
                 is_under_maintenance: editingDesk.is_under_maintenance || false,
                 maintenance_notes: editingDesk.maintenance_notes || '',
-                branch_id: editingDesk.branch_id || null,
-                branch: null
+                // branch_id: editingDesk.branch_id || null,
+                // branch: null
                 // 'branch' object is not part of DeskFormData, only branch_id
             });
             setShowFormModal(true);
@@ -169,17 +151,17 @@ const DesksPage: React.FC = () => {
         if (apiSuccess) setApiSuccess(null);
     };
 
-    const handleSwitchChange = (name: keyof DeskFormData, checked: boolean) => {
-        setFormData(prev => ({ ...prev, [name]: checked }));
-        if (apiError) setApiError(null);
-        if (apiSuccess) setApiSuccess(null);
-    };
+    // const handleSwitchChange = (name: keyof DeskFormData, checked: boolean) => {
+    //     setFormData(prev => ({ ...prev, [name]: checked }));
+    //     if (apiError) setApiError(null);
+    //     if (apiSuccess) setApiSuccess(null);
+    // };
 
-    const handleSelectChange = (name: keyof DeskFormData, selectedValue: string | number | null) => {
-         setFormData(prev => ({ ...prev, [name]: selectedValue }));
-         if (apiError) setApiError(null);
-         if (apiSuccess) setApiSuccess(null);
-     };
+    // const handleSelectChange = (name: keyof DeskFormData, selectedValue: string | number | null) => {
+    //      setFormData(prev => ({ ...prev, [name]: selectedValue }));
+    //      if (apiError) setApiError(null);
+    //      if (apiSuccess) setApiSuccess(null);
+    //  };
 
 
      const handleFormSubmit = async (e: FormEvent) => {
@@ -203,7 +185,6 @@ const DesksPage: React.FC = () => {
             is_wheelchair_accessible: Boolean(formData.is_wheelchair_accessible),
             needs_cleaning: Boolean(formData.needs_cleaning),
             is_under_maintenance: Boolean(formData.is_under_maintenance),
-            branch_id: formData.branch_id ? Number(formData.branch_id) : null,
             shop_id: 1, // TODO: Replace with actual shop_id from context/auth
         };
 
@@ -275,12 +256,6 @@ const DesksPage: React.FC = () => {
     const columns = useMemo((): ColumnDefinition<Desk>[] => [
         { key: 'desk_number', header: '#', cellClassName: 'font-semibold text-gray-800', width: '60px' },
         { key: 'name', header: 'اسم مخصص', render: (d) => d.name || <span className="text-gray-400">-</span> },
-        {
-            key: 'branch', header: 'الفرع',
-            render: (d) => d.branch ? (
-                 <span className="flex items-center gap-1.5 text-sm text-indigo-700"> <MapPin size={15}/> {d.branch.name} </span>
-            ) : <span className="text-xs text-gray-400 italic">غير محدد</span>
-        },
         { key: 'number_of_seats', header: 'مقاعد', cellClassName: 'text-center', width: '80px' },
         {
             key: 'status', header: 'الحالة', cellClassName: 'text-center', width: '120px',
@@ -360,18 +335,6 @@ const DesksPage: React.FC = () => {
                          <Input label="اسم مخصص (اختياري)" name="name" value={formData.name || ''} onChange={handleChange} placeholder="مثال: طاولة النافذة" disabled={isSaving}/>
                      </div>
 
-                    <SearchableSelect
-                        label="الفرع (إلزامي)"
-                        options={branchOptions}
-                        value={formData.branch_id}
-                        onChange={(value) => handleSelectChange('branch_id', value)}
-                        placeholder="-- اختر الفرع --"
-                        id="branch_id_select"
-                        isLoading={isLoadingBranches}
-                        disabled={isSaving}
-                        containerClassName="relative z-30" // Ensure dropdown is above others
-                    />
-
 
                      {/* <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-3 mt-5">الموقع والتفاصيل</h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -385,14 +348,14 @@ const DesksPage: React.FC = () => {
                      <Input label="الحد الأدنى للإنفاق (اختياري)" name="minimum_spend" type="number" step="any" value={String(formData.minimum_spend ?? '')} onChange={handleChange} min="0" disabled={isSaving}/> */}
 
 
-                     <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-3 mt-5">الميزات والخدمات</h3>
+                     {/* <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-3 mt-5">الميزات والخدمات</h3>
                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-3">
                         <Switch label="تتوفر نقاط كهرباء" name="has_outlets" checked={Boolean(formData.has_outlets)} onChange={(e) => handleSwitchChange('has_outlets', e.target.checked)} id="has_outlets_switch" disabled={isSaving}/>
                         <Switch label="ذات إطلالة مميزة" name="has_view" checked={Boolean(formData.has_view)} onChange={(e) => handleSwitchChange('has_view', e.target.checked)} id="has_view_switch" disabled={isSaving}/>
                         <Switch label="مهيأة للكراسي المتحركة" name="is_wheelchair_accessible" checked={Boolean(formData.is_wheelchair_accessible)} onChange={(e) => handleSwitchChange('is_wheelchair_accessible', e.target.checked)} id="is_wheelchair_accessible_switch" disabled={isSaving}/>
-                     </div>
+                     </div> */}
 
-                     <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-3 mt-5">الحجوزات والعملاء</h3>
+                     {/* <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-3 mt-5">الحجوزات والعملاء</h3>
                       <SearchableSelect
                         label="تخصيص لعميل (اختياري)"
                         options={customerOptions}
@@ -407,15 +370,15 @@ const DesksPage: React.FC = () => {
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Input label="وقت الحجز (اختياري)" name="reservation_time" type="datetime-local" value={formData.reservation_time || ''} onChange={handleChange} disabled={isSaving}/>
                         <Input label="وقت الإشغال (اختياري)" name="occupation_time" type="datetime-local" value={formData.occupation_time || ''} onChange={handleChange} disabled={isSaving}/>
-                     </div>
+                     </div> */}
 
 
-                     <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-3 mt-5">الصيانة</h3>
+                     {/* <h3 className="text-md font-semibold text-gray-700 border-b pb-2 mb-3 mt-5">الصيانة</h3>
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                         <Switch label="تحتاج تنظيف" name="needs_cleaning" checked={Boolean(formData.needs_cleaning)} onChange={(e) => handleSwitchChange('needs_cleaning', e.target.checked)} id="needs_cleaning_switch" disabled={isSaving}/>
                         <Switch label="تحت الصيانة" name="is_under_maintenance" checked={Boolean(formData.is_under_maintenance)} onChange={(e) => handleSwitchChange('is_under_maintenance', e.target.checked)} id="is_under_maintenance_switch" disabled={isSaving}/>
-                     </div>
-                     <TextArea label="ملاحظات الصيانة (اختياري)" name="maintenance_notes" value={formData.maintenance_notes || ''} onChange={handleChange} rows={2} disabled={isSaving}/>
+                     </div> */}
+                     {/* <TextArea label="ملاحظات الصيانة (اختياري)" name="maintenance_notes" value={formData.maintenance_notes || ''} onChange={handleChange} rows={2} disabled={isSaving}/> */}
 
                     <button type="submit" className="hidden" />
                  </form>

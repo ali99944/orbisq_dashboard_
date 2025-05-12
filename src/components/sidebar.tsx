@@ -13,8 +13,6 @@ import {
     ChevronDown, // Collapse icon
     Power,
     Tag,
-    MapPin,
-    Plus
 } from 'lucide-react';
 import { useAppSelector } from '../hooks/redux'; // Adjust path
 
@@ -179,13 +177,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                 { href: '/coupons', label: 'الكوبونات', icon: Tag, condition: true }, // Changed icon
             ]
         },
-        { // Branches
-            key: 'branches', label: 'الفروع', icon: MapPin, condition: true,
-            items: [
-                { href: '/branches', label: 'قائمة الفروع', icon: MapPin, condition: true },
-                { href: '/branches/create', label: 'إنشاء فرع', icon: Plus, condition: true },
-            ]
-        },
+        // { // Branches
+        //     key: 'branches', label: 'الفروع', icon: MapPin, condition: true,
+        //     items: [
+        //         { href: '/branches', label: 'قائمة الفروع', icon: MapPin, condition: true },
+        //         { href: '/branches/create', label: 'إنشاء فرع', icon: Plus, condition: true },
+        //     ]
+        // },
 
         //  { // HR & Staff
         //     key: 'hr', label: 'الموظفين والصلاحيات', icon: Users, condition: true,

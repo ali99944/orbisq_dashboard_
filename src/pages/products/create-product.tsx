@@ -100,7 +100,6 @@ const AddProductPage: React.FC = () => {
         if (imageFile) {
             submissionData.append('image', imageFile);
         }
-         // TODO: Add shop_id
 
         try {
             await createProduct(submissionData, { // Pass FormData

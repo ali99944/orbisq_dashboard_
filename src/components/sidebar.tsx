@@ -11,8 +11,8 @@ import {
     Table, // Tables
     Percent, // Coupons / Discounts
     ChevronDown, // Collapse icon
-    Power,
     Tag,
+    PlusSquare,
 } from 'lucide-react';
 import { useAppSelector } from '../hooks/redux'; // Adjust path
 
@@ -149,7 +149,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             items: [
                 { href: '/products', label: 'المنتجات', icon: UtensilsCrossed, condition: true },
                 { href: '/categories', label: 'التصنيفات', icon: Tags, condition: true },
-                // { href: '/modifiers', label: 'الإضافات', icon: PlusSquare, condition: true, disabled: true }, // Future
+                { href: '/modifiers', label: 'الإضافات', icon: PlusSquare, condition: true, disabled: true },
+                { href: '/desks', label: "الطاولات", icon: Table, condition: shop?.business_info?.has_dine_in },
             ]
         },
         { // Operations
@@ -157,56 +158,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             items: [
                  { href: '/orders', label: 'الطلبات', icon: ClipboardList, condition: true },
                  { href: '/desks', label: 'الطاولات و QR', icon: Table, condition: shop?.business_info?.has_dine_in },
-                //  { href: '/desks', label: 'الحجوزات الثابتة', icon: Table, condition: true }, // Assuming desks are always possible
             ]
         },
-        //  { // Inventory
-        //     key: 'inventory', label: 'المخزون والموردين', icon: Archive, condition: true, // Assuming basic inventory is always there
-        //     items: [
-        //          { href: '/inventory/items', label: 'المكونات والمواد', icon: Archive, condition: true },
-        //          { href: '/suppliers', label: 'الموردين', icon: Truck, condition: true },
-        //          // { href: '/inventory/categories', label: 'تصنيفات المخزون', icon: Tags, condition: true, disabled: true},
-        //          // { href: '/inventory/purchases', label: 'أوامر الشراء', icon: ShoppingCart, condition: true, disabled: true},
-        //          // { href: '/inventory/stocktakes', label: 'الجرد', icon: ClipboardCheck, condition: true, disabled: true},
-        //     ]
-        // },
          { // Marketing
             key: 'marketing', label: 'التسويق', icon: Percent, condition: true,
             items: [
-                // { href: '/discounts', label: 'الخصومات', icon: Percent, condition: true },
                 { href: '/coupons', label: 'الكوبونات', icon: Tag, condition: true }, // Changed icon
             ]
-        },
-        // { // Branches
-        //     key: 'branches', label: 'الفروع', icon: MapPin, condition: true,
-        //     items: [
-        //         { href: '/branches', label: 'قائمة الفروع', icon: MapPin, condition: true },
-        //         { href: '/branches/create', label: 'إنشاء فرع', icon: Plus, condition: true },
-        //     ]
-        // },
+        },    ];
 
-        //  { // HR & Staff
-        //     key: 'hr', label: 'الموظفين والصلاحيات', icon: Users, condition: true,
-        //     items: [
-        //         { href: '/employees', label: 'قائمة الموظفين', icon: Users, condition: true },
-        //         { href: '/roles', label: 'الأدوار', icon: KeyRound, condition: true },
-        //         { href: '/permissions', label: 'الصلاحيات', icon: ShieldCheck, condition: true }, // Link to view permissions
-        //     ]
-        // },
-        //  { // Settings & Configuration
-        //     key: 'settings', label: 'الإعدادات', icon: Settings, condition: true,
-        //     items: [
-        //         { href: '/settings/shop', label: 'إعدادات المطعم العامة', icon: Settings, condition: true },
-        //         { href: '/settings/reasons', label: 'الأسباب المعرفة', icon: MessageSquareWarning, condition: true },
-        //         { href: '/settings/reason-categories', label: 'تصنيفات الأسباب', icon: Tags, condition: true },
-        //         { href: '/settings/taxes', label: 'الضرائب', icon: Landmark, condition: true },
-        //         { href: '/settings/locations', label: 'المواقع (فروع/مستودعات)', icon: Building, condition: true }, // Combined locations page
-        //         // { href: '/settings/integrations', label: 'الربط الخارجي', icon: Link2, condition: true, disabled: true },
-        //     ]
-        // },
-    ];
-
-     const handleLogout = () => { /* ... */ }; // Keep logout handler
 
     return (
         <aside
@@ -248,15 +208,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
                     ))}
                 </ul>
             </nav>
-
-            {/* Logout Button */}
-             <div className="flex-shrink-0 p-3 border-t border-gray-200 mt-auto">
-                 {/* Use Button component for consistency if available */}
-                 <button onClick={handleLogout} className="w-full flex items-center justify-start gap-3 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-[#8B0000] hover:bg-[#FDECEC] transition-colors duration-150 group">
-                     <Power size={18} className="text-gray-400 group-hover:text-[#8B0000]"/>
-                     تسجيل الخروج
-                 </button>
-             </div>
         </aside>
     );
 };

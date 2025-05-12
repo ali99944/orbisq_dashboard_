@@ -17,7 +17,7 @@ import Input from '../../components/ui/input';
 import { getImageLink } from '../../lib/storage';
 // --- End Relative Imports ---
 
-import { Plus, Edit, Trash2, QrCode, UserCheck, CheckCircle, Clock, Lock, HelpCircle, Save, ArrowDownToLine, X } from 'lucide-react'; // Added MapPin and X
+import { Plus, Edit, Trash2, QrCode, UserCheck, CheckCircle, Clock, Lock, HelpCircle, Save, X } from 'lucide-react'; // Added MapPin and X
 import StatusChangeModal from './status-change-modal'; // Assuming this exists
 import { AxiosError } from 'axios';
 
@@ -400,7 +400,6 @@ const DesksPage: React.FC = () => {
                       <div className="text-center">
                           <img src={getImageLink(showQrModal.qrcode)} alt={`QR Code ${showQrModal.desk_number}`} className="mx-auto p-1 bg-white max-w-[250px] w-full"/>
                            <p className="text-xs text-gray-500 mt-3">يمكن للعملاء مسح هذا الرمز.</p>
-                           <Button icon={ArrowDownToLine} variant='secondary' size='sm' className='mt-4' onClick={() => { /* TODO: Implement Download */ alert('Download QR'); }}>تحميل QR</Button>
                       </div>
                   ) : <Alert variant='warning' message='لم يتم العثور على رمز QR لهذه الطاولة.'/>}
               </Modal>

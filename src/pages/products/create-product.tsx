@@ -138,8 +138,8 @@ const AddProductPage: React.FC = () => {
                          <Card title="المعلومات الأساسية للمنتج">
                             <div className="space-y-5 mt-4">
                                 <Input label="اسم المنتج *" name="name" value={formData.name} onChange={handleChange} required disabled={isLoading} />
-                                <Select label="التصنيف *" value={(formData.product_category_id ?? 0).toString()} onChange={() => {
-                                    // setFormData(prev => ({ ...prev, product_category_id: val }));
+                                <Select label="التصنيف *" value={(formData.product_category_id ?? 0).toString()} onChange={(val) => {
+                                    setFormData(prev => ({ ...prev, product_category_id: +val }));
                                 }} options={categoryOptions} placeholder="-- اختر التصنيف --" />
                                 <TextArea label="الوصف" name="description" value={formData.description || ''} onChange={handleChange} rows={3} disabled={isLoading}/>
                                 <Input  label="السعر" name="price" type="number" value={formData.price || ''} onChange={handleChange} min="0" step="0.01" disabled={isLoading || formData.pricing_type === 'dynamic'} icon={DollarSign} size="sm" required={formData.pricing_type === 'fixed'} suffix={'ر.س'} />

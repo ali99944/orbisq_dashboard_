@@ -18,6 +18,7 @@ import { useGetQuery, useMutationAction } from '../../hooks/queries-actions';
 import { Category } from '../../types/category';
 import { AxiosError } from 'axios';
 import { ApiErrorWithMessage } from '../../types/error';
+import { useAppSelector } from '../../hooks/redux';
 
 const AddProductPage: React.FC = () => {
     const navigate = useNavigate();
@@ -67,6 +68,9 @@ const AddProductPage: React.FC = () => {
     };
 
 
+    const shop = useAppSelector(state => state.auth_store.portal?.shop)
+
+
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setFormError(null);
@@ -100,6 +104,8 @@ const AddProductPage: React.FC = () => {
         if (imageFile) {
             submissionData.append('image', imageFile);
         }
+
+        submissionData.append('shop_id', String(shop?.id));
 
         try {
             await createProduct(submissionData, { // Pass FormData

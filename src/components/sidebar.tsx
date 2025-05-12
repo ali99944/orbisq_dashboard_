@@ -157,7 +157,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             key: 'operations', label: 'العمليات', icon: ClipboardList, condition: true,
             items: [
                  { href: '/orders', label: 'الطلبات', icon: ClipboardList, condition: true },
-                 { href: '/desks', label: 'الطاولات و QR', icon: Table, condition: shop?.business_info?.has_dine_in },
+                 { href: '/desks', label: 'الطاولات و QR', icon: Table },
             ]
         },
          { // Marketing

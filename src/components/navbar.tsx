@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // For dropdown animation
-import { Settings, UserCircle, LogOut, Bell } from 'lucide-react';
+import { Settings, UserCircle, LogOut } from 'lucide-react';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -55,20 +55,6 @@ const Navbar: React.FC = () => {
 
                     {/* Right Side (RTL): Search, Notifications, User Menu */}
                     <div className="flex items-center gap-3 sm:gap-4">
-                        {/* Global Search (Optional) */}
-                        {/* <button className="p-2 text-gray-400 hover:text-gray-600 focus:outline-none rounded-md hover:bg-gray-100">
-                            <Search size={20} />
-                        </button> */}
-
-                        {/* Notifications (Optional) */}
-                         <button className="relative p-2 text-gray-400 hover:text-gray-600 focus:outline-none rounded-md hover:bg-gray-100">
-                            <Bell size={20} />
-                             {/* Example Badge */}
-                            {/* <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-red-500 ring-1 ring-white"></span> */}
-                         </button>
-
-                        {/* Separator */}
-                        <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block"></div>
 
                         {/* User Avatar Dropdown */}
                         <div className="relative" ref={dropdownRef}>

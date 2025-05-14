@@ -189,14 +189,14 @@ const DashboardHomePage: React.FC = () => {
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
                 <h1 className="text-2xl font-bold text-gray-800">نظرة عامة على الأداء</h1>
                 <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
-                    <div className="flex items-center bg-gray-100 border border-gray-200 rounded-lg p-1 shadow-sm">
+                    <div className="flex items-center bg-gray-100 border border-gray-300 rounded-lg p-1">
                         {timePeriodOptions.map(period => (
                             <button
                                 key={period.key}
                                 onClick={() => handleTimePeriodChange(period.key)}
                                 className={`px-3 py-1.5 text-xs font-semibold rounded-md ${
                                     timePeriod === period.key
-                                        ? 'bg-white text-primary shadow-sm ring-1 ring-primary/20'
+                                        ? 'bg-white text-primary  border border-gray-300'
                                         : 'text-gray-500 hover:text-gray-800 hover:bg-white/70'
                                 } transition-all duration-150 ease-in-out`}
                             >

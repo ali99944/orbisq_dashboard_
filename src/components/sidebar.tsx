@@ -149,7 +149,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             items: [
                 { href: '/products', label: 'المنتجات', icon: UtensilsCrossed, condition: true },
                 { href: '/categories', label: 'التصنيفات', icon: Tags, condition: true },
-                { href: '/modifiers', label: 'الإضافات', icon: PlusSquare, condition: true, disabled: true },
                 { href: '/desks', label: "الطاولات", icon: Table, condition: shop?.business_info?.has_dine_in },
             ]
         },

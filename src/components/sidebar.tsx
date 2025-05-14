@@ -12,7 +12,6 @@ import {
     Percent, // Coupons / Discounts
     ChevronDown, // Collapse icon
     Tag,
-    PlusSquare,
 } from 'lucide-react';
 import { useAppSelector } from '../hooks/redux'; // Adjust path
 

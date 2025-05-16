@@ -1,7 +1,6 @@
 // src/pages/orders/OrdersPage.tsx
 import React, { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Eye, Clock, Truck, ShoppingBag, User, DollarSign, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, Clock, Truck, ShoppingBag, User, DollarSign, Calendar, CheckCircle, XCircle } from 'lucide-react';
 
 import { useAppSelector } from '../../hooks/redux';
 import Alert from '../../components/ui/alert';
@@ -76,7 +75,6 @@ interface Order {
 }
 
 const OrdersPage: React.FC = () => {
-    const navigate = useNavigate();
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [showCancelModal, setShowCancelModal] = useState<Order | null>(null);
     const [cancellationReason, setCancellationReason] = useState<string>('');
@@ -105,7 +103,6 @@ const OrdersPage: React.FC = () => {
     });
 
     // --- Handlers ---
-    const handleAdd = () => navigate('/orders/create');
     
     const handleView = (order: Order) => {
         setSelectedOrder(order);
@@ -377,7 +374,7 @@ const OrdersPage: React.FC = () => {
     ];
     
     const toolbarActions = (
-        <Button onClick={handleAdd} icon={Plus}>إضافة طلب</Button>
+        <></>
     );
 
     // --- Helper function to get customer details based on order type ---

@@ -14,10 +14,7 @@ import {
     Tag, // Coupons
     Settings, // Settings
     Users, // Users
-    ShoppingBag, // Inventory
     Truck, // Delivery
-    CreditCard, // Payments
-    BarChart, // Reports
     Bell, // Notifications
     History, // Changelog
 } from 'lucide-react';
@@ -47,7 +44,7 @@ interface NavGroup {
 // Animation variants for smoother transitions
 const sidebarVariants = {
     open: { x: 0, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' },
-    closed: { x: '100%', boxShadow: 'none' },
+    closed: { x: 0, boxShadow: 'none' },
 };
 
 const itemVariants = {
@@ -66,7 +63,7 @@ const groupContentVariants = {
         }
     },
     collapsed: { 
-        opacity: 0, 
+        opacity: 1, 
         height: 0,
         transition: { 
             duration: 0.2,
@@ -202,7 +199,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             items: [
                 { href: '/products', label: 'المنتجات', icon: UtensilsCrossed, condition: true },
                 { href: '/categories', label: 'التصنيفات', icon: Tags, condition: true },
-                { href: '/inventory', label: 'المخزون', icon: ShoppingBag, condition: true },
                 { href: '/desks', label: "الطاولات", icon: Table, condition: shop?.business_info?.has_dine_in },
             ]
         },
@@ -214,7 +210,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             items: [
                 { href: '/orders', label: 'الطلبات', icon: ClipboardList, condition: true, badge: 'جديد' },
                 { href: '/delivery', label: 'التوصيل', icon: Truck, condition: true },
-                { href: '/payments', label: 'المدفوعات', icon: CreditCard, condition: true },
             ]
         },
         { // Marketing
@@ -224,17 +219,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             condition: true,
             items: [
                 { href: '/coupons', label: 'الكوبونات', icon: Tag, condition: true },
-                { href: '/promotions', label: 'العروض', icon: Percent, condition: true, disabled: true },
-            ]
-        },
-        { // Reports
-            key: 'reports', 
-            label: 'التقارير', 
-            icon: BarChart, 
-            condition: true,
-            items: [
-                { href: '/reports/sales', label: 'تقارير المبيعات', icon: BarChart, condition: true, disabled: true },
-                { href: '/reports/inventory', label: 'تقارير المخزون', icon: ShoppingBag, condition: true, disabled: true },
             ]
         },
         { // Settings
@@ -257,7 +241,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             animate={isSidebarOpen ? "open" : "closed"}
             variants={sidebarVariants}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className={`bg-white border-l border-gray-200 flex flex-col fixed inset-y-0 right-0 z-30 w-64 lg:translate-x-0`}
+            className={`bg-white border-l border-gray-200 flex flex-col fixed inset-y-0 right-0 z-30 w-64 transform ${!isSidebarOpen ? 'translate-x-full' : ''} lg:translate-x-0`}
             dir="rtl"
         >
             {/* Logo Area */}

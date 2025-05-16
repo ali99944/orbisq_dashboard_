@@ -1,8 +1,8 @@
 // src/constants/socket_constants.ts
 
 // Socket server URL - replace with your actual server URL
-// export const SOCKET_SERVER_URL = 'https://server.oorbis.top';
-export const SOCKET_SERVER_URL = 'http://localhost:5000';
+export const SOCKET_SERVER_URL = 'https://server.oorbis.top';
+// export const SOCKET_SERVER_URL = 'http://localhost:5000';
 
 // Socket events
 export const SOCKET_EVENTS = {

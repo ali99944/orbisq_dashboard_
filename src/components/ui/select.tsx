@@ -17,6 +17,7 @@ interface SelectProps {
   error?: string
   searchable?: boolean
   className?: string
+  disabled?: boolean
 }
 
 export default function Select({
@@ -28,6 +29,7 @@ export default function Select({
   error,
   searchable = false,
   className = '',
+  disabled = false,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -65,10 +67,9 @@ export default function Select({
       <div className={`relative ${className}`}>
         <button
           type="button"
-          className={`w-full bg-white border border-gray-200 rounded py-1 px-2 text-base text-right flex items-center justify-between focus:outline-none  transition-colors ${
-            error ? 'border-red-500' : ''
-          }`}
-          onClick={() => setIsOpen(!isOpen)}
+          className={`w-full bg-white border border-gray-200 rounded py-1 px-2 text-base text-right flex items-center justify-between focus:outline-none transition-colors ${error ? 'border-red-500' : ''} ${disabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''}`}
+          disabled={disabled}
+          onClick={() => !disabled && setIsOpen(!isOpen)}
         >
           <span className={`${!selectedOption ? 'text-gray-400' : ''}`}>
             {selectedOption ? selectedOption.label : placeholder}

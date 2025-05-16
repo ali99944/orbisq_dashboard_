@@ -1,9 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
+import SupportPage from "./pages/support/support";
+import ChangelogPage from "./pages/changelog/changelog";
+import ChangePasswordPage from "./pages/auth/change-password";
 import Layout from "./components/layout";
 import CategoriesPage from "./pages/categories/categories";
 import AddCategoryPage from "./pages/categories/create-category";
 import CouponsPage from "./pages/coupons/coupons";
-import AddCouponPage from "./pages/coupons/create-coupon";
 // import DiscountsPage from "./pages/discounts/discounts";
 // import AddDiscountPage from "./pages/discounts/create-discount";
 // import TaxesPage from "./pages/taxes/taxes";
@@ -30,6 +32,8 @@ import DesksPage from "./pages/desks/desks";
 // import PermissionGroupsPage from "./pages/permissions/permission-groups";
 // import ShopSettingsPage from "./pages/settings/settings";
 // import ReportsPage from "./pages/reports/reports";
+import OrdersPage from "./pages/orders/orders";
+import OrderDetailsPage from "./pages/orders/order-details";
 import Login from "./pages/auth/login_screen";
 
 const router = createBrowserRouter([
@@ -37,6 +41,14 @@ const router = createBrowserRouter([
         path: "/",
         element: <Layout />,
         children: [
+        {
+          path: "support",
+          element: <SupportPage />
+        },
+        {
+          path: "change-password",
+          element: <ChangePasswordPage />
+        },
             {
                 path: '/',
                 element: <DashboardHomePage />
@@ -52,10 +64,6 @@ const router = createBrowserRouter([
             {
                 path: '/coupons',
                 element: <CouponsPage />
-            },
-            {
-                path: '/coupons/create',
-                element: <AddCouponPage />
             },
             // {
             //     path: '/discounts',
@@ -117,6 +125,14 @@ const router = createBrowserRouter([
                 path: '/desks',
                 element: <DesksPage />
             },
+            {
+                path: '/orders',
+                element: <OrdersPage />
+            },
+            {
+                path: '/orders/:id',
+                element: <OrderDetailsPage />
+            },
             // {
             //     path: '/reasons',
             //     element: <ReasonsPage />
@@ -166,6 +182,10 @@ const router = createBrowserRouter([
     {
         path: '/login',
         element: <Login />
+    },
+    {
+        path: '/changelog',
+        element: <ChangelogPage />
     }
 ]);
 

@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost'; // Added ghost
-  size?: 'sm' | 'md' | 'lg'; // Added size
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'warning' | 'outline'; // Added outline
+  size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
   isLoading?: boolean;
   icon?: React.ElementType;
@@ -35,6 +35,12 @@ const Button: React.FC<ButtonProps> = ({
   let focusRingColor = "focus:ring-[#A70000]"; // Default primary focus
 
   switch (variant) {
+    case 'outline':
+      variantStyles = "bg-transparent border-[#A70000] text-[#A70000]";
+      hoverStyles = "hover:bg-[#A70000] hover:text-white";
+      activeStyles = "active:bg-[#8B0000]";
+      focusRingColor = "focus:ring-[#A70000]";
+      break;
     case 'secondary':
        // Improved Secondary: Clearer border, subtle background hover
       variantStyles = "bg-white border-gray-300 text-gray-700";
@@ -54,6 +60,12 @@ const Button: React.FC<ButtonProps> = ({
        activeStyles = "active:bg-gray-200";
        focusRingColor = "focus:ring-gray-400";
        break;
+      case 'warning':
+      variantStyles = "bg-yellow-400 border-transparent text-gray-800";
+      hoverStyles = "hover:bg-yellow-500"; // Apply hover bg directly
+      activeStyles = "active:bg-yellow-600";
+      focusRingColor = "focus:ring-yellow-500";
+      break;
     case 'primary':
     default:
       variantStyles = `bg-[#A70000] border-transparent text-white`;

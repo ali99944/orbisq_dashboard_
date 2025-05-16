@@ -16,6 +16,7 @@ import TextArea from '../../components/ui/textarea';
 import { Plus, Edit, Trash2, Image as ImageIcon, Save, X } from 'lucide-react'; // Added X for close
 import { getImageLink } from '../../lib/storage'; // Adjust path
 import FileUpload from '../../components/ui/file-upload';
+import { useAppSelector } from '../../hooks/redux';
 
 interface CreateCategoryFormData {
     name: string;
@@ -67,10 +68,12 @@ const CategoriesPage: React.FC = () => {
     const [apiSuccess, setApiSuccess] = useState<string | null>(null);
     const [activeToggles, setActiveToggles] = useState<Record<number, boolean>>({});
 
+    const shop = useAppSelector(state => state.auth_store.portal?.shop);
+
     // --- Data Fetching ---
     const { data: categories, isLoading, error: queryError, refetch } = useGetQuery<Category[]>({
         key: ['categories'],
-        url: 'shops/1/categories?include_count=products',
+        url: `shops/${shop?.id}/categories`,
     });
 
     // --- Mutations ---

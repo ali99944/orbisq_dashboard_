@@ -200,7 +200,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         }
         // else: validateFile already set an error if the file was invalid
 
-    }, [validateFile, onFileSelect, onUrlSelect, currentImageUrl]);
+    }, [validateFile, onFileSelect, onUrlSelect]);
 
 
     return (

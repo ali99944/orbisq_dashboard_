@@ -363,8 +363,17 @@ const ProductsPage: React.FC = () => {
                             </div>
                         ))}
                     </div>
-                    <button type="button" onClick={() => {}}
-                        className="text-sm text-[#A70000] hover:text-[#13425a] font-medium flex items-center mt-3 transition-colors">
+                    <button 
+                        type="button" 
+                        onClick={() => {
+                            const updatedModifiers = [...showEditModal.modifiers, {
+                                name: '',
+                                price_adjustment: null
+                            }];
+                            setShowEditModal(prev => prev ? {...prev, modifiers: updatedModifiers} : null);
+                        }}
+                        className="text-sm text-[#A70000] hover:text-[#13425a] font-medium flex items-center mt-3 transition-colors"
+                    >
                         <PackagePlus className="w-4 h-4 mr-1" /> إضافة اختيار إضافي
                     </button>
                 </fieldset>

@@ -211,12 +211,12 @@ const OrdersPage: React.FC = () => {
             confirmed: { color: 'blue', label: 'مؤكد' },
             preparing: { color: 'yellow', label: 'قيد التحضير' },
             ready: { color: 'indigo', label: 'جاهز' },
-            served: { color: 'green', label: 'تم التقديم' },
-            out_for_delivery: { color: 'purple', label: 'قيد التوصيل' },
-            delivered: { color: 'green', label: 'تم التوصيل' },
+            // served: { color: 'green', label: 'تم التقديم' },
+            // out_for_delivery: { color: 'purple', label: 'قيد التوصيل' },
+            // delivered: { color: 'green', label: 'تم التوصيل' },
             completed: { color: 'green', label: 'مكتمل' },
             cancelled: { color: 'red', label: 'ملغي' },
-            refunded: { color: 'orange', label: 'مسترجع' }
+            // refunded: { color: 'orange', label: 'مسترجع' }
         };
 
         const statusInfo = statusMap[status] || { color: 'gray', label: status };
@@ -227,10 +227,10 @@ const OrdersPage: React.FC = () => {
     const getPaymentStatusBadge = (status: string) => {
         const statusMap: Record<string, { color: string, label: string }> = {
             unpaid: { color: 'red', label: 'غير مدفوع' },
-            partially_paid: { color: 'yellow', label: 'مدفوع جزئياً' },
+            // partially_paid: { color: 'yellow', label: 'مدفوع جزئياً' },
             paid: { color: 'green', label: 'مدفوع' },
-            refunded: { color: 'orange', label: 'مسترجع' },
-            failed: { color: 'red', label: 'فشل الدفع' }
+            // refunded: { color: 'orange', label: 'مسترجع' },
+            // failed: { color: 'red', label: 'فشل الدفع' }
         };
 
         const statusInfo = statusMap[status] || { color: 'gray', label: status };

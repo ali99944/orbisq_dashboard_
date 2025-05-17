@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion'; // For dropdown animation
 import { Settings, UserCircle, LogOut } from 'lucide-react';
+import { authSlice } from '../redux/stores/auth-store';
+import { useAppDispatch } from '../hooks/redux';
 
 const Navbar: React.FC = () => {
     const navigate = useNavigate();
@@ -16,10 +18,11 @@ const Navbar: React.FC = () => {
 
     // --- Handlers ---
     const toggleUserDropdown = () => setIsUserDropdownOpen(prev => !prev);
+    const dispatch = useAppDispatch();
 
     const handleLogout = () => {
         setIsUserDropdownOpen(false); // Close dropdown
-        // dispatch(logout());
+        dispatch(authSlice.actions.logout());
         // Optionally clear other states
         navigate('/login'); // Redirect to login
     };

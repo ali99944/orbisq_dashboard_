@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axiosHttp from "../../lib/axios_client";
 import { AxiosError } from "axios";
 import { parseError } from "../../lib/error_handler";
-import { saveAuthenticationToken } from "../../lib/authentication";
+import { saveAuthenticationToken, removeAuthenticationToken } from "../../lib/authentication";
 import { ShopAccessPortal } from "../../types/shop";
 
 interface AuthState {
@@ -44,7 +44,15 @@ export const loginPortal = createAsyncThunk('auth/login', async (payload: LoginP
 export const authSlice = createSlice({
     name: 'auth-slice',
     initialState,
-    reducers: {},
+    reducers: {
+        logout: (state) => {
+            state.token = null
+            state.portal = null
+            state.loading = false
+            state.error = null
+            removeAuthenticationToken()
+        }
+    },
     extraReducers: (builder) => {
         builder
             .addCase(loginPortal.pending, (state) => {

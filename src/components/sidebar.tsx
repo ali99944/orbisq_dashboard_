@@ -14,10 +14,8 @@ import {
     Tag, // Coupons
     Settings, // Settings
     Users, // Users
-    Truck, // Delivery
     Bell, // Notifications
     History, // Changelog
-    SlidersHorizontal, // Modifier Groups
 } from 'lucide-react';
 import { useAppSelector } from '../hooks/redux';
 
@@ -200,7 +198,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             items: [
                 { href: '/products', label: 'المنتجات', icon: UtensilsCrossed, condition: true },
                 { href: '/categories', label: 'التصنيفات', icon: Tags, condition: true },
-                { href: '/modifier-groups', label: 'مجموعات التعديل', icon: SlidersHorizontal, condition: true },
                 { href: '/desks', label: "الطاولات", icon: Table, condition: shop?.business_info?.has_dine_in },
             ]
         },
@@ -211,7 +208,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
             condition: true,
             items: [
                 { href: '/orders', label: 'الطلبات', icon: ClipboardList, condition: true, badge: 'جديد' },
-                { href: '/delivery', label: 'التوصيل', icon: Truck, condition: true },
             ]
         },
         { // Marketing

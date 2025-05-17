@@ -1,4 +1,5 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from 'react-router-dom';
+import ProtectedRoute from './components/protected-route';
 import SupportPage from "./pages/support/support";
 import ChangelogPage from "./pages/changelog/changelog";
 import ChangePasswordPage from "./pages/auth/change-password";
@@ -17,7 +18,7 @@ import Login from "./pages/auth/login_screen";
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Layout />,
+        element: <ProtectedRoute><Layout /></ProtectedRoute>,
         children: [
         {
           path: "support",

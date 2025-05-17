@@ -13,6 +13,7 @@ import { ApiErrorWithMessage } from '../../types/error';
 import Badge, { BadgeColor } from '../../components/ui/badge';
 import Card from '../../components/ui/card';
 import Select from '../../components/ui/select';
+import { Product } from '../../types/product';
 
 // Define Order type based on the Prisma schema
 interface OrderItem {
@@ -29,6 +30,8 @@ interface OrderItem {
   started_at?: Date;
   completed_at?: Date;
   created_at: Date;
+
+  product: Product
 }
 
 interface Order {
@@ -175,8 +178,7 @@ const OrdersPage: React.FC = () => {
         
         try {
             await updateOrder({
-                url: `orders/${selectedOrder.id}`,
-                data: { payment_status: paymentStatus }
+                status: paymentStatus
             });
             setApiSuccess(`تم تحديث حالة الدفع للطلب "${selectedOrder.order_number}" بنجاح`);
             refetch();
@@ -227,10 +229,7 @@ const OrdersPage: React.FC = () => {
     const getPaymentStatusBadge = (status: string) => {
         const statusMap: Record<string, { color: string, label: string }> = {
             unpaid: { color: 'red', label: 'غير مدفوع' },
-            // partially_paid: { color: 'yellow', label: 'مدفوع جزئياً' },
             paid: { color: 'green', label: 'مدفوع' },
-            // refunded: { color: 'orange', label: 'مسترجع' },
-            // failed: { color: 'red', label: 'فشل الدفع' }
         };
 
         const statusInfo = statusMap[status] || { color: 'gray', label: status };
@@ -259,21 +258,14 @@ const OrdersPage: React.FC = () => {
         { value: 'confirmed', label: 'مؤكد' },
         { value: 'preparing', label: 'قيد التحضير' },
         { value: 'ready', label: 'جاهز' },
-        { value: 'served', label: 'تم التقديم' },
-        { value: 'out_for_delivery', label: 'قيد التوصيل' },
-        { value: 'delivered', label: 'تم التوصيل' },
         { value: 'completed', label: 'مكتمل' },
         { value: 'cancelled', label: 'ملغي' },
-        { value: 'refunded', label: 'مسترجع' }
     ];
 
     // --- Payment Status Options ---
     const paymentStatusOptions = [
         { value: 'unpaid', label: 'غير مدفوع' },
-        { value: 'partially_paid', label: 'مدفوع جزئياً' },
         { value: 'paid', label: 'مدفوع' },
-        { value: 'refunded', label: 'مسترجع' },
-        { value: 'failed', label: 'فشل الدفع' }
     ];
 
     // --- Table Columns ---
@@ -543,7 +535,7 @@ const OrdersPage: React.FC = () => {
                                             <Card key={item.id} className="p-2">
                                                 <div className="flex justify-between">
                                                     <div className="flex flex-col">
-                                                        <span className="font-medium">{item.product_name || `المنتج #${item.product_id}`}</span>
+                                                        <span className="font-medium">{item.product?.name || `المنتج #${item.product_id}`}</span>
                                                         <span className="text-sm text-gray-500">
                                                             {item.quantity} × {parseFloat(String(item.unit_price)).toFixed(2)} {currencyIcon}
                                                         </span>

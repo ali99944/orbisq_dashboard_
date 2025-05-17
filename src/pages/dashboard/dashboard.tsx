@@ -1,6 +1,5 @@
 // src/pages/dashboard/DashboardHomePage.tsx
 import React, { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom'; // Assuming you use react-router-dom
 import {
     ShoppingCart, DollarSign, Users,
     Percent, ArrowUpRight, ArrowDownRight,
@@ -39,7 +38,6 @@ const KPICard: React.FC<KPICardProps> = ({
     iconColorClass = 'text-primary',
     bgColorClass = 'bg-primary/10',
     description,
-    linkTo,
     isLoading
 }) => {
     const isPositiveTrend = trendValue !== null && trendValue !== undefined && trendValue >= 0;
@@ -69,7 +67,7 @@ const KPICard: React.FC<KPICardProps> = ({
                     </div>
                 </div>
                 <p className="text-3xl font-bold text-gray-900 truncate">
-                    {value}
+                    {(+value).toFixed(2)}
                     {unit && <span className="text-sm font-medium text-gray-500 mr-1">{unit}</span>}
                 </p>
                 {(trendValue !== null && trendValue !== undefined) && (
@@ -84,11 +82,6 @@ const KPICard: React.FC<KPICardProps> = ({
                 )}
                  {description && <p className="text-xs text-gray-500 mt-2">{description}</p>}
             </div>
-            {linkTo && (
-                <Link to={linkTo} className="block mt-3 text-xs font-medium text-primary hover:underline self-start">
-                    عرض التفاصيل
-                </Link>
-            )}
         </div>
     );
 };
@@ -142,7 +135,7 @@ const DashboardHomePage: React.FC = () => {
         },
         totalOrders: {
             title: "إجمالي الطلبات",
-            value: overview.total_orders.count,
+            value: +overview.total_orders.count + +overview.order_status_trends?.total_rejected_orders.count,
             trendValue: overview.total_orders.change_percentage,
             icon: ShoppingCart,
             iconColorClass: 'text-blue-500',
@@ -173,8 +166,7 @@ const DashboardHomePage: React.FC = () => {
     // --- Time Period Buttons & Logic ---
     const timePeriodOptions: { key: TimePeriod; label: string }[] = [
         { key: 'day', label: 'اليوم' }, { key: 'week', label: 'هذا الأسبوع' },
-        { key: 'month', label: 'هذا الشهر' }, { key: 'year', label: 'هذه السنة' }, // Changed 'this_year' to 'year'
-        { key: 'custom', label: 'فترة مخصصة' },
+        { key: 'month', label: 'هذا الشهر' }, // Changed 'this_year' to 'year'
     ];
 
     const handleTimePeriodChange = (period: TimePeriod) => {
@@ -271,6 +263,42 @@ const DashboardHomePage: React.FC = () => {
 
             {!isLoading && !error && (
                 <>
+                    {/* --- Order Status Trends Section --- */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
+                        <KPICard
+                            title="الطلبات المكتملة"
+                            value={overview?.order_status_trends.total_completed_orders.count ?? 0}
+                            trendValue={overview?.order_status_trends.total_completed_orders.change_percentage}
+                            icon={ShoppingCart}
+                            iconColorClass="text-green-500"
+                            bgColorClass="bg-green-50"
+                            trendPeriod="مقارنة بالفترة السابقة"
+                        />
+                        <KPICard
+                            title="الطلبات المرفوضة"
+                            value={overview?.order_status_trends.total_rejected_orders.count ?? 0}
+                            trendValue={overview?.order_status_trends.total_rejected_orders.change_percentage}
+                            icon={ShoppingCart}
+                            iconColorClass="text-red-500"
+                            bgColorClass="bg-red-50"
+                            trendPeriod="مقارنة بالفترة السابقة"
+                        />
+                        <KPICard
+                            title="الطلبات المعلقة"
+                            value={overview?.order_status_trends.total_pending_orders.count ?? 0}
+                            icon={ShoppingCart}
+                            iconColorClass="text-yellow-500"
+                            bgColorClass="bg-yellow-50"
+                        />
+                        <KPICard
+                            title="الطلبات قيد التنفيذ"
+                            value={overview?.order_status_trends.total_preparing_orders.count ?? 0}
+                            icon={ShoppingCart}
+                            iconColorClass="text-blue-500"
+                            bgColorClass="bg-blue-50"
+                        />
+                    </div>
+
                     {/* --- KPIs Section --- */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                         {Object.entries(dashboardKPIs).map(([key, kpiData]) => (
@@ -283,13 +311,13 @@ const DashboardHomePage: React.FC = () => {
                         <Card title="الأطباق الأكثر طلباً" className="md:col-span-1">
                             <ul className="space-y-1.5 max-h-80 overflow-y-auto pr-1 text-sm">
                                 {topDishes?.top_dishes?.map((dish) => (
-                                    <li key={dish.id} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
+                                    <li key={dish.name} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
                                         <span className="text-gray-700 truncate max-w-[65%]">{dish.name}</span>
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-xs ${dish.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {/* <span className={`text-xs ${dish.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                 {dish.trend > 0 ? '+' : ''}{dish.trend}%
-                                            </span>
-                                            <span className="font-semibold text-xs">{dish.quantity} طلب</span>
+                                            </span> */}
+                                            <span className="font-semibold text-xs">{dish.order_count} طلب</span>
                                         </div>
                                     </li>
                                 ))}
@@ -298,13 +326,13 @@ const DashboardHomePage: React.FC = () => {
                         <Card title="الأصناف الأكثر طلباً" className="md:col-span-1">
                             <ul className="space-y-1.5 max-h-80 overflow-y-auto pr-1 text-sm">
                                 {topCategories?.top_categories?.map((category) => (
-                                    <li key={category.id} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
+                                    <li key={category.name} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
                                         <span className="text-gray-700 truncate max-w-[65%]">{category.name}</span>
                                         <div className="flex items-center gap-2">
-                                            <span className={`text-xs ${category.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {/* <span className={`text-xs ${category.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                 {category.trend > 0 ? '+' : ''}{category.trend}%
-                                            </span>
-                                            <span className="font-semibold text-xs">{category.quantity} طلب</span>
+                                            </span> */}
+                                            <span className="font-semibold text-xs">{category.order_count} طلب</span>
                                         </div>
                                     </li>
                                 ))}

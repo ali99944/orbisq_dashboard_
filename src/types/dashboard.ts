@@ -20,24 +20,44 @@ export interface DashboardOverview {
         value: number
         change_percentage: number
         currency: string
+    },
+
+    order_status_trends: {
+        total_rejected_orders: {
+            count: number,
+            change_percentage: number
+        },
+        total_completed_orders: {
+            count: number,
+            change_percentage: number
+        },
+        total_pending_orders: {
+            count: number
+        },
+        total_preparing_orders: {
+            count: number
+        }
     }
 }
 
 // Top Performers Types
 export interface TopDish {
-    id: string;
+    rank: number;
+    product_id: string;
     name: string;
-    quantity: number;
-    trend: number;
+    order_count: number;
+    total_quantity: number;
+    total_revenue: number;
 }
 
 export interface TopCategory {
-    id: string;
+    rank: number;
+    category_id: string;
     name: string;
-    quantity: number;
-    trend: number;
+    order_count: number;
+    total_quantity: number;
+    total_revenue: number;
 }
-
 // Request Parameters Type
 export interface DashboardTimeframe {
     timeframe?: 'day' | 'week' | 'month' | 'year' | 'custom';

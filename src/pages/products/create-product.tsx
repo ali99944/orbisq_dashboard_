@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import type { Product, ProductFormData } from '../../types/product';
 import { initialProductFormData } from '../../types/product';
 
-import { Save, DollarSign } from 'lucide-react'; // More icons
+import { Save, DollarSign, PackagePlus, TrashIcon } from 'lucide-react'; // More icons
 import Alert from '../../components/ui/alert';
 import Button from '../../components/ui/button';
 import Card from '../../components/ui/card';
@@ -72,6 +72,30 @@ const AddProductPage: React.FC = () => {
         contentType: 'multipart/form-data'
     });
 
+
+    const addExtraRow = () => {
+        setFormData(prev => ({
+            ...prev,
+            modifiers: [...prev.modifiers, { name: "", price_adjustment: null }] // Add empty extra
+        }));
+    };
+  
+     const removeExtraRow = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            modifiers: prev.modifiers.filter((_, i) => i !== index) // Remove by index
+        }));
+     };
+
+    // --- NEW: Extra Handlers ---
+    const handleExtraChange = (index: number, field: 'name' | 'price_adjustment', value: string) => {
+        setFormData(prev => {
+            const updatedExtras = [...prev.modifiers];
+            updatedExtras[index] = { ...updatedExtras[index], [field]: value };
+            return { ...prev, modifiers: updatedExtras };
+        });
+    };
+
     // --- Handlers ---
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -120,7 +144,7 @@ const AddProductPage: React.FC = () => {
              const formKey = key as keyof ProductFormData;
              const value = formData[formKey];
 
-             if (value !== null && value !== undefined && value !== '') {
+             if (value !== null && value !== undefined && value !== '' && key != 'modifiers') {
                   // Convert boolean to 1/0 for FormData
                  const processedValue = typeof value === 'boolean' ? (value ? '1' : '0') : String(value);
                  submissionData.append(key, processedValue);
@@ -133,6 +157,13 @@ const AddProductPage: React.FC = () => {
         }
 
         submissionData.append('shop_id', String(shop?.id));
+        console.log(formData.modifiers);
+        console.log(
+            JSON.stringify(formData.modifiers) // TODO: fix
+        );
+        
+        // Append extras
+        submissionData.append('modifiers', JSON.stringify(formData.modifiers));
 
         try {
             await createProduct(submissionData, { // Pass FormData
@@ -184,39 +215,6 @@ const AddProductPage: React.FC = () => {
                                     step="0.01"
                                     icon={DollarSign}
                                 />
-                                {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <Select
-                                        label="مجموعات التعديل"
-                                        // value={formData.modifier_group_ids?.map(String) || []}
-                                        onChange={(values) => {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                modifier_group_ids: values.map(v => +v)
-                                            }));
-                                        }}
-                                        options={modifierGroups?.map(group => ({ 
-                                            value: String(group.id), 
-                                            label: group.name 
-                                        })) || []}
-                                        placeholder="-- اختر مجموعات التعديل --"
-                                    />
-                                    <Select
-                                        label="مجموعات الإضافات"
-                                        // value={formData.addon_group_ids?.map(String) || []}
-                                        onChange={(values) => {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                addon_group_ids: values.map(v => +v)
-                                            }));
-                                        }}
-                                        options={addonGroups?.map(group => ({ 
-                                            value: String(group.id), 
-                                            label: group.name 
-                                        })) || []}
-                                        // isMulti
-                                        placeholder="-- اختر مجموعات الإضافات --"
-                                    />
-                                </div> */}
                             </div>
                          </Card>
 
@@ -232,14 +230,42 @@ const AddProductPage: React.FC = () => {
                                  {/* <Switch label="منتج تجزئة؟" name="is_retail" checked={formData.is_retail} onChange={handleSwitchChange} disabled={isLoading} description="هل هذا المنتج يباع كوحدة مستقلة (مثل علبة مشروب) وليس طبق يتم تحضيره؟"/> */}
                              </div>
                          </Card>
-                         {/* <Card title="المعرفات (اختياري)">
-                             <div className="space-y-5 mt-4">
-                                 <Input label="رقم SKU" name="sku_number" value={formData.sku_number || ''} onChange={handleChange} icon={ScanLine} disabled={isLoading} size="sm"/>
-                                 <Input label="الرمز المرجعي" name="reference_code" value={formData.reference_code || ''} onChange={handleChange} icon={FileCode} disabled={isLoading} size="sm"/>
-                             </div>
-                         </Card> */}
+
+                         <Card title='الاانواع و الاضافات'>
+                                    {/* --- NEW: Extras Section --- */}
+              <fieldset className="border border-gray-200 px-4 pt-3 pb-4 rounded-md bg-gray-50/50">
+                    <legend className="text-sm font-medium text-gray-600 px-1">الإضافات (اختياري)</legend>
+                    <div className="space-y-3 mt-2">
+                        {formData.modifiers.map((extra, index) => (
+                            <div key={index} className="flex items-center gap-x-2">
+                                <input
+                                    type="text" placeholder="اسم الإضافة (مثل: جبنة إضافية)" aria-label={`Extra ${index + 1} name`}
+                                    value={extra.name} onChange={(e) => handleExtraChange(index, 'name', e.target.value)}
+                                    className="flex-grow border-gray-300 border px-3 py-2 rounded-md text-sm focus:border-[#A70000] focus:ring-1 focus:ring-[#A70000]"
+                                />
+                                <input
+                                    type="number" placeholder="السعر" step="0.01" min="0" aria-label={`Extra ${index + 1} price`}
+                                    value={extra.price_adjustment ?? 0} onChange={(e) => handleExtraChange(index, 'price_adjustment', e.target.value)}
+                                    className="w-28 border-gray-300 border px-3 py-2 rounded-md text-sm focus:border-[#A70000] focus:ring-1 focus:ring-[#A70000]"
+                                />
+                                <button
+                                  type="button" onClick={() => removeExtraRow(index)} title="إزالة الإضافة"
+                                  className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full transition-colors"
+                                > <TrashIcon className="w-4 h-4" /> </button>
+                            </div>
+                        ))}
+                    </div>
+                    <button type="button" onClick={addExtraRow}
+                        className="text-sm text-[#A70000] hover:text-[#13425a] font-medium flex items-center mt-3 transition-colors">
+                        <PackagePlus className="w-4 h-4 mr-1" /> إضافة اختيار إضافي
+                    </button>
+                </fieldset>
+                {/* --- End NEW --- */}
+                         </Card>
                      </div>
                  </div>
+
+
 
                  {/* Submit Actions */}
                  <div className="mt-8 pt-5 border-t border-gray-200 flex justify-start gap-3">

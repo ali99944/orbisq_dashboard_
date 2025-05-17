@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Product } from '../../types/product';
 import type { Category } from '../../types/category';
-import { Plus, Trash2, ImageIcon, DollarSign } from 'lucide-react';
+import { Plus, Trash2, ImageIcon, DollarSign, PackagePlus, TrashIcon } from 'lucide-react';
 
 import { useAppSelector } from '../../hooks/redux';
 import Alert from '../../components/ui/alert';
@@ -18,6 +18,7 @@ import { ApiErrorWithMessage } from '../../types/error';
 import Input from '../../components/ui/input';
 import Select from '../../components/ui/select';
 import TextArea from '../../components/ui/textarea';
+import FileUpload from '../../components/ui/file-upload';
 
 const ProductsPage: React.FC = () => {
     const navigate = useNavigate();
@@ -46,7 +47,8 @@ const ProductsPage: React.FC = () => {
     const { mutateAsync: updateProduct, isPending: isUpdating } = useMutationAction({
         method: 'put',
         url: `products/${showEditModal?.id}`,
-        key: ['products']
+        key: ['products'],
+        contentType: 'multipart/form-data'
     });
 
     const { mutateAsync: deleteProduct, isPending: isDeleting } = useMutationAction({
@@ -114,7 +116,7 @@ const ProductsPage: React.FC = () => {
             render: (p) => (
                 <div className="w-10 h-10 rounded border border-gray-100 bg-gray-50 flex items-center justify-center overflow-hidden">
                     {p.image ? (
-                        <img src={getImageLink(p.image)} alt={p.name} className="h-full w-full object-cover" />
+                        <img src={getImageLink(p.image as string)} alt={p.name} className="h-full w-full object-cover" />
                     ) : (
                         <ImageIcon size={20} className="text-gray-300" />
                     )}
@@ -222,15 +224,19 @@ const ProductsPage: React.FC = () => {
                             onClick={async () => {
                                 if (!showEditModal) return;
                                 try {
-                                    await updateProduct({
-                                        data: {
-                                            name: showEditModal.name,
-                                            description: showEditModal.description,
-                                            price: showEditModal.price,
-                                            product_category_id: showEditModal.product_category_id,
-                                            is_active: showEditModal.is_active,
-                                        }
-                                    });
+                                    const formData = new FormData();
+                                    formData.append('name', showEditModal.name);
+                                    formData.append('description', showEditModal.description || '');
+                                    formData.append('price', String(showEditModal.price));
+                                    formData.append('product_category_id', String(showEditModal.product_category_id));
+                                    formData.append('is_active', String(showEditModal.is_active));
+                                    formData.append('modifiers', JSON.stringify(showEditModal.modifiers));
+                                    
+                                    if (showEditModal.image) {
+                                        formData.append('image', showEditModal.image);
+                                    }
+
+                                    await updateProduct(formData);
                                     setApiSuccess(`تم تحديث المنتج "${showEditModal.name}" بنجاح`);
                                     refetch();
                                     closeEditModal();
@@ -281,6 +287,87 @@ const ProductsPage: React.FC = () => {
                             checked={showEditModal.is_active}
                             onChange={(e) => setShowEditModal(prev => prev ? {...prev, is_active: e.target.checked} : null)}
                         />
+
+                        <FileUpload 
+                            id='image-upload'
+                            label="الصورة"
+                            currentImageUrl={
+                                getImageLink(showEditModal.image as string)
+                            }
+                            maxSizeMB={5 * 1024 * 1024} // 5 MB
+                            onFileSelect={(file) => {
+                                // Handle file selection
+                                if (file) {
+                                    setShowEditModal(prev => prev ? {...prev, image: file} : null);
+                                }
+                            }}
+                            onFileRemove={() => {
+                                setShowEditModal(prev => prev ? {...prev, image: null} : null);
+                            }}
+                            onUrlSelect={(url) => {
+                                // Handle URL selection if needed
+                                if (url) {
+                                    setShowEditModal(prev => prev ? {...prev, image: url} : null);
+                                }
+                            }}
+                        />
+
+<fieldset className="border border-gray-200 px-4 pt-3 pb-4 rounded-md bg-gray-50/50">
+                    <legend className="text-sm font-medium text-gray-600 px-1">الإضافات (اختياري)</legend>
+                    <div className="space-y-3 mt-2">
+                        {showEditModal.modifiers.map((extra, index) => (
+                            <div key={index} className="flex items-center gap-x-2">
+                                <input
+                                    type="text" 
+                                    placeholder="اسم الإضافة (مثل: جبنة إضافية)" 
+                                    aria-label={`Extra ${index + 1} name`}
+                                    value={extra.name} 
+                                    onChange={(e) => {
+                                        const updatedModifiers = [...showEditModal.modifiers];
+                                        updatedModifiers[index] = {
+                                            ...updatedModifiers[index],
+                                            name: e.target.value
+                                        };
+                                        setShowEditModal(prev => prev ? {...prev, modifiers: updatedModifiers} : null);
+                                    }}
+                                    className="flex-grow border-gray-300 border px-3 py-2 rounded-md text-sm focus:border-[#A70000] focus:ring-1 focus:ring-[#A70000]"
+                                />
+                                <input
+                                    type="number" 
+                                    placeholder="السعر" 
+                                    step="0.01" 
+                                    min="0" 
+                                    aria-label={`Extra ${index + 1} price`}
+                                    value={extra.price_adjustment ?? 0}
+                                    onChange={(e) => {
+                                        const updatedModifiers = [...showEditModal.modifiers];
+                                        updatedModifiers[index] = {
+                                            ...updatedModifiers[index],
+                                            price_adjustment: parseFloat(e.target.value)
+                                        };
+                                        setShowEditModal(prev => prev ? {...prev, modifiers: updatedModifiers} : null);
+                                    }}
+                                    className="w-28 border-gray-300 border px-3 py-2 rounded-md text-sm focus:border-[#A70000] focus:ring-1 focus:ring-[#A70000]"
+                                />
+                                <button
+                                    type="button" 
+                                    onClick={() => {
+                                        const updatedModifiers = showEditModal.modifiers.filter((_, i) => i !== index);
+                                        setShowEditModal(prev => prev ? {...prev, modifiers: updatedModifiers} : null);
+                                    }}
+                                    title="إزالة الإضافة"
+                                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-100 rounded-full transition-colors"
+                                >
+                                    <TrashIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                    <button type="button" onClick={() => {}}
+                        className="text-sm text-[#A70000] hover:text-[#13425a] font-medium flex items-center mt-3 transition-colors">
+                        <PackagePlus className="w-4 h-4 mr-1" /> إضافة اختيار إضافي
+                    </button>
+                </fieldset>
                     </div>
                 )}
             </Modal>

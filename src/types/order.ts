@@ -1,6 +1,6 @@
 import { Desk } from "./desk";
 import { Discount } from "./discount";
-import { Product } from "./product";
+import { Modifier, Product } from "./product";
 import { Shop } from "./shop";
 
 export interface Order {
@@ -71,6 +71,14 @@ export interface OrderItem {
   applied_discount_id?: number;
   applied_discount?: Discount;
   created_at: Date;
+
+  payment_status: PaymentStatus;
+  payment_method?: PaymentMethod;
+  refunded_at?: Date;
+  transaction_id?: string;
+  paid_at?: Date;
+
+  order_item_modifiers: Modifier[]
 }
 
 export enum OrderStatus {
@@ -96,10 +104,8 @@ enum ItemStatus {
 
 export enum PaymentStatus {
   unpaid,
-  partially_paid,
   paid,
   refunded,
-  failed
 }
 
 enum PaymentMethod {

@@ -13,7 +13,9 @@ import { ApiErrorWithMessage } from '../../types/error';
 import Badge, { BadgeColor } from '../../components/ui/badge';
 import Card from '../../components/ui/card';
 import Select from '../../components/ui/select';
-import { Product } from '../../types/product';
+import { Modifier, Product } from '../../types/product';
+import { SOCKET_EVENTS } from '../../constants/socket_constants';
+import { useSocket } from '../../providers/socket-provider';
 
 // Define Order type based on the Prisma schema
 interface OrderItem {
@@ -31,7 +33,8 @@ interface OrderItem {
   completed_at?: Date;
   created_at: Date;
 
-  product: Product
+  product: Product;
+  order_item_modifiers: Modifier[];
 }
 
 interface Order {
@@ -91,8 +94,24 @@ const OrdersPage: React.FC = () => {
     // --- Data Fetching ---
     const { data: orders, isLoading, error, refetch } = useGetQuery<Order[]>({
         key: ['orders'],
-        url: 'orders?include=order_items',
+        url: 'orders?include=order_items,order_items.order_item_modifiers',
     });
+
+    const { socket } = useSocket()
+    const shop_id = useAppSelector(state => state.auth_store.portal?.shop_id)
+
+    socket?.on(SOCKET_EVENTS.ORDER_CREATED, (order: Order) => {
+        if(order.shop_id == shop_id) {
+            refetch()
+        }
+    })
+
+    socket?.on(SOCKET_EVENTS.ORDER_UPDATED, (order: Order) => {
+        if(order.shop_id == shop_id) {
+            refetch()
+        }
+    })
+
 
     // --- Mutations ---
     const { mutateAsync: cancelOrder, isPending: isCancelling } = useMutationAction({
@@ -103,6 +122,11 @@ const OrdersPage: React.FC = () => {
     const { mutateAsync: updateOrder, isPending: isUpdating } = useMutationAction({
         method: 'put',
         url: `orders/${selectedOrder?.id}/status`
+    });
+
+    const { mutateAsync: updateOrderPayment, isPending: isUpdatingPayment } = useMutationAction({
+        method: 'put',
+        url: `orders/${selectedOrder?.id}/payment`
     });
 
     // --- Handlers ---
@@ -177,8 +201,8 @@ const OrdersPage: React.FC = () => {
         if (!selectedOrder) return;
         
         try {
-            await updateOrder({
-                status: paymentStatus
+            await updateOrderPayment({
+                payment_status: paymentStatus
             });
             setApiSuccess(`تم تحديث حالة الدفع للطلب "${selectedOrder.order_number}" بنجاح`);
             refetch();
@@ -251,7 +275,6 @@ const OrdersPage: React.FC = () => {
             </Badge>
         );
     };
-
     // --- Order Status Options ---
     const orderStatusOptions = [
         { value: 'pending', label: 'قيد الانتظار' },
@@ -266,6 +289,7 @@ const OrdersPage: React.FC = () => {
     const paymentStatusOptions = [
         { value: 'unpaid', label: 'غير مدفوع' },
         { value: 'paid', label: 'مدفوع' },
+        { value: 'refunded', label: 'مسترجع' }
     ];
 
     // --- Table Columns ---
@@ -285,6 +309,11 @@ const OrdersPage: React.FC = () => {
             key: 'order_type',
             header: 'نوع الطلب',
             render: (order) => getOrderTypeBadge(order.order_type)
+        },
+        {
+            key: 'payment_status',
+            header: 'حالة الدفع',
+            render: (order) => getPaymentStatusBadge(order.payment_status)
         },
         {
             key: 'customer',
@@ -323,11 +352,6 @@ const OrdersPage: React.FC = () => {
                     <span>{parseFloat(String(order.total)).toFixed(2)} {currencyIcon}</span>
                 </div>
             )
-        },
-        {
-            key: 'payment_status',
-            header: 'حالة الدفع',
-            render: (order) => getPaymentStatusBadge(order.payment_status)
         },
         {
             key: 'actions',
@@ -471,6 +495,54 @@ const OrdersPage: React.FC = () => {
                                     </div>
                                 </div>
                                 
+                                {/* Order Items */}
+                                <div className="space-y-2">
+                                    <h4 className="font-medium text-gray-700">تفاصيل الطلب</h4>
+                                    <div className="space-y-2 text-sm">
+                                        {selectedOrder.order_items.map((item) => {
+                                            // Calculate total price including modifiers
+                                            const modifiersTotal = item.order_item_modifiers?.reduce((total, modifier) => {
+                                                return total + (modifier.price_adjustment || 0);
+                                            }, 0) || 0;
+
+                                            const itemTotal = (item.unit_price + modifiersTotal) * item.quantity;
+
+                                            return (
+                                                <div key={item.id} className="border-b pb-2">
+                                                    <div className="flex justify-between items-start">
+                                                        <div>
+                                                            <span className="font-medium flex gap-x-2">
+                                                                <span>{item.product_name || item.product.name}</span>
+                                                                {
+                                                                    item.order_item_modifiers.find(mod => mod.price_adjustment == null) && (
+                                                                        <span>({ item.order_item_modifiers.find(mod => mod.price_adjustment == null)?.name })</span>
+                                                                    )
+                                                                }
+                                                            </span>
+                                                            <div className="text-gray-500">
+                                                                {item.order_item_modifiers?.filter(mod => mod.price_adjustment).map((modifier, index) => (
+                                                                    <div key={index}>
+                                                                        + {modifier.name} ({parseFloat(String(modifier.price_adjustment || 0)).toFixed(2)} {currencyIcon})
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div>{item.quantity}x</div>
+                                                            <div className="font-medium">{parseFloat(String(itemTotal)).toFixed(2)} {currencyIcon}</div>
+                                                        </div>
+                                                    </div>
+                                                    {item.special_requests && (
+                                                        <div className="text-gray-500 mt-1">
+                                                            ملاحظات: {item.special_requests}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
                                 {/* Customer Info */}
                                 <div className="space-y-2">
                                     <h4 className="font-medium text-gray-700">معلومات العميل</h4>
@@ -527,32 +599,7 @@ const OrdersPage: React.FC = () => {
                                     </div>
                                 </div>
                                 
-                                {/* Order Items */}
-                                <div className="space-y-2">
-                                    <h4 className="font-medium text-gray-700">العناصر المطلوبة</h4>
-                                    <div className="space-y-2">
-                                        {selectedOrder.order_items.map((item) => (
-                                            <Card key={item.id} className="p-2">
-                                                <div className="flex justify-between">
-                                                    <div className="flex flex-col">
-                                                        <span className="font-medium">{item.product?.name || `المنتج #${item.product_id}`}</span>
-                                                        <span className="text-sm text-gray-500">
-                                                            {item.quantity} × {parseFloat(String(item.unit_price)).toFixed(2)} {currencyIcon}
-                                                        </span>
-                                                        {item.special_requests && (
-                                                            <span className="text-xs text-gray-500 mt-1">
-                                                                طلبات خاصة: {item.special_requests}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <span className="font-medium">{parseFloat(String(item.total_price)).toFixed(2)} {currencyIcon}</span>
-                                                    </div>
-                                                </div>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                </div>
+
                                 
                                 {/* Order Summary */}
                                 <div className="space-y-2">
@@ -560,7 +607,18 @@ const OrdersPage: React.FC = () => {
                                     <div className="space-y-1 text-sm">
                                         <div className="flex justify-between">
                                             <span className="text-gray-500">المجموع الفرعي</span>
-                                            <span>{parseFloat(String(selectedOrder.subtotal)).toFixed(2)} {currencyIcon}</span>
+                                            <span>
+                                                {parseFloat(String(selectedOrder.order_items.reduce((total, item) => {
+                                                    const modifiersTotal = item.order_item_modifiers?.reduce((modTotal, modifier) => {
+                                                        return modTotal + (modifier.price_adjustment || 0);
+                                                    }, 0) || 0;
+                                                    return total + ((item.unit_price + modifiersTotal) * item.quantity);
+                                                }, 0))).toFixed(2)} {currencyIcon}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500">الضريبة</span>
+                                            <span>0.00 {currencyIcon}</span>
                                         </div>
                                         {selectedOrder.tax_amount > 0 && (
                                             <div className="flex justify-between">
@@ -594,7 +652,14 @@ const OrdersPage: React.FC = () => {
                                         )}
                                         <div className="flex justify-between font-medium border-t pt-2 mt-2">
                                             <span>الإجمالي</span>
-                                            <span>{parseFloat(String(selectedOrder.total)).toFixed(2)} {currencyIcon}</span>
+                                            <span>
+                                                {parseFloat(String(selectedOrder.order_items.reduce((total, item) => {
+                                                    const modifiersTotal = item.order_item_modifiers?.reduce((modTotal, modifier) => {
+                                                        return modTotal + (modifier.price_adjustment || 0);
+                                                    }, 0) || 0;
+                                                    return total + ((item.unit_price + modifiersTotal) * item.quantity);
+                                                }, 0) + (selectedOrder.delivery_fee || 0) + (selectedOrder.service_charge || 0) + (selectedOrder.tip_amount || 0) - (selectedOrder.discount_amount || 0))).toFixed(2)} {currencyIcon}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
@@ -646,7 +711,7 @@ const OrdersPage: React.FC = () => {
                                                 size="sm"
                                                 onClick={updatePaymentStatus}
                                                 disabled={['refunded'].includes(selectedOrder.payment_status) || paymentStatus === selectedOrder.payment_status}
-                                                isLoading={isUpdating}
+                                                isLoading={isUpdatingPayment}
                                             >
                                                 <CheckCircle size={16} />
                                             </Button>

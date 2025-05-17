@@ -12,6 +12,46 @@ export interface ProductRecipeItem {
     // Maybe add cost calculation later
 }
 
+export interface ModifierGroup {
+    id: number;
+    name: string;
+    description?: string | null;
+    display_type: 'radio' | 'checkbox' | 'dropdown' | 'quantity';
+    modifiers: Modifier[];
+}
+
+export interface Modifier {
+    id: number;
+    group_id: number;
+    name: string;
+    description?: string | null;
+    price_adjustment: number;
+    is_default: boolean;
+    sort_order: number;
+    sku?: string | null;
+    stock_quantity?: number | null;
+    is_active: boolean;
+}
+
+export interface AddonGroup {
+    id: number;
+    name: string;
+    description?: string | null;
+    addons: Addon[];
+}
+
+export interface Addon {
+    id: number;
+    group_id: number;
+    name: string;
+    description?: string | null;
+    price: number;
+    sort_order: number;
+    sku?: string | null;
+    stock_quantity?: number | null;
+    is_active: boolean;
+}
+
 export interface Product {
     id: number;
     name: string;
@@ -44,10 +84,32 @@ export interface Product {
     tax?: Tax | null;
     discount?: Discount | null;
     recipe_items?: ProductRecipeItem[]; // Array of linked inventory items for recipe
+    
+    // Modifiers and Addons
+    modifier_groups?: ProductModifierGroup[];
+    addon_groups?: ProductAddonGroup[];
+}
+
+interface ProductModifierGroup {
+    product_id: number
+    group: ModifierGroup
+    is_required: boolean
+    min_selections: number
+    max_selections: number
+    sort_order: number
+}
+
+interface ProductAddonGroup {
+    product_id: number
+    group: ModifierGroup
+    sort_order: number
 }
 
 // Type for Add/Edit Form state
-export type ProductFormData = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'product_category' | 'tax' | 'discount' | 'recipe_items'>;
+export type ProductFormData = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'product_category' | 'tax' | 'discount' | 'recipe_items' | 'modifier_groups' | 'addon_groups'> & {
+    modifier_group_ids?: number[];
+    addon_group_ids?: number[];
+};
 
 // Initial state for Add Form
 export const initialProductFormData: ProductFormData = {
@@ -67,4 +129,6 @@ export const initialProductFormData: ProductFormData = {
     pricing_type: 'fixed',
     sales_unit_type: 'piece',
     cost_calculation_unit: 'ingredient',
+    modifier_group_ids: [],
+    addon_group_ids: [],
 };

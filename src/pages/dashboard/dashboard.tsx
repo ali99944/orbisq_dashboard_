@@ -97,16 +97,8 @@ const KPICard: React.FC<KPICardProps> = ({
 
 type TimePeriod = 'day' | 'week' | 'month' | 'year' | 'custom'; // Added 'year' to TimePeriod type
 
-// --- Dummy Data Generation ---
-const generateDummyKPIData = (period: TimePeriod): Record<string, KPICardProps> => ({
-    totalSales: { title: "إجمالي المبيعات", value: (Math.random() * 25000 + 8000).toLocaleString('ar-EG', { minimumFractionDigits: 0, maximumFractionDigits: 0 }), unit: "ر.س", trendValue: Math.random() * 10 - 4, icon: DollarSign, iconColorClass: 'text-green-500', bgColorClass: 'bg-green-50', linkTo: "/reports/sales" },
-    totalOrders: { title: "إجمالي الطلبات", value: Math.floor(Math.random() * 300) + 70, icon: ShoppingCart, trendValue: Math.random() * 15 - 6, iconColorClass: 'text-blue-500', bgColorClass: 'bg-blue-50', linkTo: "/orders" },
-    avgOrderValue: { title: "متوسط قيمة الطلب", value: (Math.random() * 100 + 40).toLocaleString('ar-EG', { minimumFractionDigits: 0, maximumFractionDigits: 0 }), unit: "ر.س", trendValue: Math.random() * 5 - 2.5, icon: Percent, iconColorClass: 'text-indigo-500', bgColorClass: 'bg-indigo-50' },
-    activeCustomers: { title: "العملاء (هذا " + (period === 'day' ? 'اليوم' : period === 'week' ? 'الأسبوع' : 'الشهر') + ")", value: Math.floor(Math.random() * 150) + 30, icon: Users, trendValue: Math.random() * 8 - 3, iconColorClass: 'text-sky-500', bgColorClass: 'bg-sky-50', linkTo: "/customers"},
-});
-
-const generateTopItems = (count = 5) => Array.from({length: count}, (_,i) => ({ name: `طبق شهي ${i+1}`, value: (Math.random()*100+10).toFixed(0), type: "طلب", change: Math.random()*20-10 }));
-// --- End Dummy Data ---
+import { useDashboardOverview, useTopDishes, useTopCategories } from '../../hooks/use-dashboard';
+import type { DashboardTimeframe } from '../../types/dashboard';
 
 // --- Component ---
 const DashboardHomePage: React.FC = () => {
@@ -117,13 +109,65 @@ const DashboardHomePage: React.FC = () => {
     const [selectedSingleDate, setSelectedSingleDate] = useState<Date | null>(new Date());
 
 
-    // --- API Fetching Placeholder (using useMemo for dummy data) ---
-    const isLoading = false;
-    const error = null;
+    // --- API Data Fetching ---
+    const params: DashboardTimeframe = {
+        timeframe: timePeriod,
+        ...(customStartDate && { start_date: format(customStartDate, 'yyyy-MM-dd') }),
+        ...(customEndDate && { end_date: format(customEndDate, 'yyyy-MM-dd') }),
+        ...(timePeriod === 'day' && selectedSingleDate && { start_date: format(selectedSingleDate, 'yyyy-MM-dd'), end_date: format(selectedSingleDate, 'yyyy-MM-dd') })
+    };
 
-    const dashboardKPIs = useMemo(() => generateDummyKPIData(timePeriod), [timePeriod]);
-    const topItems = useMemo(() => generateTopItems(), []);
-    const topCategories = useMemo(() => generateTopItems(3).map(item => ({...item, name: `صنف ${item.name.split(' ')[2]}`})), []);
+    const { data: overview, isLoading: overviewLoading, error: overviewError } = useDashboardOverview(params);
+    const { data: topDishes, isLoading: dishesLoading } = useTopDishes(params);
+    const { data: topCategories, isLoading: categoriesLoading } = useTopCategories(params);
+
+    console.log(overview);
+    console.log(topDishes);
+    console.log(topCategories);
+    
+
+    const isLoading = overviewLoading || dishesLoading || categoriesLoading;
+    const error = overviewError;
+
+    const dashboardKPIs = useMemo(() => overview ? {
+        totalSales: {
+            title: "إجمالي المبيعات",
+            value: overview.total_sales.value,
+            unit: overview.total_sales.currency,
+            trendValue: overview.total_sales.change_percentage,
+            icon: DollarSign,
+            iconColorClass: 'text-green-500',
+            bgColorClass: 'bg-green-50',
+            linkTo: "/reports/sales"
+        },
+        totalOrders: {
+            title: "إجمالي الطلبات",
+            value: overview.total_orders.count,
+            trendValue: overview.total_orders.change_percentage,
+            icon: ShoppingCart,
+            iconColorClass: 'text-blue-500',
+            bgColorClass: 'bg-blue-50',
+            linkTo: "/orders"
+        },
+        avgOrderValue: {
+            title: "متوسط قيمة الطلب",
+            value: overview.average_order_value.value,
+            unit: overview.average_order_value.currency,
+            trendValue: overview.average_order_value.change_percentage,
+            icon: Percent,
+            iconColorClass: 'text-indigo-500',
+            bgColorClass: 'bg-indigo-50'
+        },
+        activeCustomers: {
+            title: "العملاء (هذا " + (timePeriod === 'day' ? 'اليوم' : timePeriod === 'week' ? 'الأسبوع' : 'الشهر') + ")",
+            value: overview.customers.count,
+            trendValue: overview.customers.change_percentage,
+            icon: Users,
+            iconColorClass: 'text-sky-500',
+            bgColorClass: 'bg-sky-50',
+            linkTo: "/customers"
+        }
+    } : {}, [overview, timePeriod]);
 
 
     // --- Time Period Buttons & Logic ---
@@ -237,23 +281,31 @@ const DashboardHomePage: React.FC = () => {
                     {/* --- Top Performers & Insights --- */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-6">
                         <Card title="الأطباق الأكثر طلباً" className="md:col-span-1">
-                             {/* ... Top Items List ... */}
-                             <ul className="space-y-1.5 max-h-80 overflow-y-auto pr-1 text-sm">
-                                {topItems.map((item, index) => (
-                                    <li key={index} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
-                                        <span className="text-gray-700 truncate max-w-[65%]">{item.name}</span>
-                                        <span className={`font-semibold text-xs ${item.change >=0 ? 'text-green-600' : 'text-red-600'}`}>{item.value} طلب</span>
+                            <ul className="space-y-1.5 max-h-80 overflow-y-auto pr-1 text-sm">
+                                {topDishes?.top_dishes?.map((dish) => (
+                                    <li key={dish.id} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
+                                        <span className="text-gray-700 truncate max-w-[65%]">{dish.name}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-xs ${dish.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {dish.trend > 0 ? '+' : ''}{dish.trend}%
+                                            </span>
+                                            <span className="font-semibold text-xs">{dish.quantity} طلب</span>
+                                        </div>
                                     </li>
                                 ))}
                             </ul>
                         </Card>
                         <Card title="الأصناف الأكثر طلباً" className="md:col-span-1">
-                             {/* ... Top Categories List ... */}
-                             <ul className="space-y-1.5 max-h-80 overflow-y-auto pr-1 text-sm">
-                                {topCategories.map((cat, index) => (
-                                    <li key={index} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
-                                        <span className="text-gray-700 truncate max-w-[65%]">{cat.name}</span>
-                                        <span className={`font-semibold text-xs ${cat.change >=0 ? 'text-green-600' : 'text-red-600'}`}>{cat.value} طلب</span>
+                            <ul className="space-y-1.5 max-h-80 overflow-y-auto pr-1 text-sm">
+                                {topCategories?.top_categories?.map((category) => (
+                                    <li key={category.id} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
+                                        <span className="text-gray-700 truncate max-w-[65%]">{category.name}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-xs ${category.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                {category.trend > 0 ? '+' : ''}{category.trend}%
+                                            </span>
+                                            <span className="font-semibold text-xs">{category.quantity} طلب</span>
+                                        </div>
                                     </li>
                                 ))}
                             </ul>

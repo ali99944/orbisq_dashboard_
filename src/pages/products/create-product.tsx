@@ -27,13 +27,41 @@ const AddProductPage: React.FC = () => {
     const [formError, setFormError] = useState<string | null>(null);
     const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
+    const shop = useAppSelector(state => state.auth_store.portal?.shop)
+
+
     // --- Fetch related data for Selects ---
-    const { data: categoriesData } = useGetQuery<Category[]>({ key: ['productCategories'], url: 'shops/1/categories' }); // Fetch only active
+    const { data: categories } = useGetQuery<Category[]>({
+        key: ['categories'],
+        url: `shops/${shop?.id}/categories`,
+    });
+
+    // Fetch modifier groups and addon groups
+    // const { data: modifierGroups } = useGetQuery<ModifierGroup[]>({
+    //     key: ['modifierGroups'],
+    //     url: `shops/${shop?.id}/modifier-groups`,
+    // });
+
+    // const { data: addonGroups } = useGetQuery<AddonGroup[]>({
+    //     key: ['addonGroups'],
+    //     url: `shops/${shop?.id}/addon-groups`,
+    // });
+
     // --- Prepare options for Select components ---
     const categoryOptions: SelectOption[] = useMemo(() =>
-        categoriesData?.map(cat => ({ value: cat.id.toString(), label: cat.name })) || [],
-        [categoriesData]
+        categories?.map(cat => ({ value: cat.id.toString(), label: cat.name })) || [],
+        [categories]
     );
+
+    // const modifierGroupOptions: SelectOption[] = useMemo(() =>
+    //     modifierGroups?.map(group => ({ value: group.id.toString(), label: group.name })) || [],
+    //     [modifierGroups]
+    // );
+
+    // const addonGroupOptions: SelectOption[] = useMemo(() =>
+    //     addonGroups?.map(group => ({ value: group.id.toString(), label: group.name })) || [],
+    //     [addonGroups]
+    // );
 
 
     // --- Mutation ---
@@ -68,7 +96,6 @@ const AddProductPage: React.FC = () => {
     };
 
 
-    const shop = useAppSelector(state => state.auth_store.portal?.shop)
 
 
     const handleSubmit = async (e: FormEvent) => {
@@ -148,10 +175,48 @@ const AddProductPage: React.FC = () => {
                                     setFormData(prev => ({ ...prev, product_category_id: +val }));
                                 }} options={categoryOptions} placeholder="-- اختر التصنيف --" />
                                 <TextArea label="الوصف" name="description" value={formData.description || ''} onChange={handleChange} rows={3} disabled={isLoading}/>
-                                <Input  label="السعر" name="price" type="number" value={formData.price || ''} onChange={handleChange} min="0" step="0.01" disabled={isLoading || formData.pricing_type === 'dynamic'} icon={DollarSign} size="sm" required={formData.pricing_type === 'fixed'} suffix={'ر.س'} />
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                </div>
+                                <Input
+                                    label="السعر"
+                                    type="number"
+                                    value={+(formData.price ?? 0) as number}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                                    min="0"
+                                    step="0.01"
+                                    icon={DollarSign}
+                                />
+                                {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <Select
+                                        label="مجموعات التعديل"
+                                        // value={formData.modifier_group_ids?.map(String) || []}
+                                        onChange={(values) => {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                modifier_group_ids: values.map(v => +v)
+                                            }));
+                                        }}
+                                        options={modifierGroups?.map(group => ({ 
+                                            value: String(group.id), 
+                                            label: group.name 
+                                        })) || []}
+                                        placeholder="-- اختر مجموعات التعديل --"
+                                    />
+                                    <Select
+                                        label="مجموعات الإضافات"
+                                        // value={formData.addon_group_ids?.map(String) || []}
+                                        onChange={(values) => {
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                addon_group_ids: values.map(v => +v)
+                                            }));
+                                        }}
+                                        options={addonGroups?.map(group => ({ 
+                                            value: String(group.id), 
+                                            label: group.name 
+                                        })) || []}
+                                        // isMulti
+                                        placeholder="-- اختر مجموعات الإضافات --"
+                                    />
+                                </div> */}
                             </div>
                          </Card>
 

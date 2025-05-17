@@ -2,7 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Product } from '../../types/product';
-import { Plus, Edit, Trash2, Eye, ImageIcon } from 'lucide-react';
+import type { Category } from '../../types/category';
+import { Plus, Trash2, ImageIcon, DollarSign } from 'lucide-react';
 
 import { useAppSelector } from '../../hooks/redux';
 import Alert from '../../components/ui/alert';
@@ -14,14 +15,25 @@ import Switch from '../../components/ui/switch';
 import { useGetQuery, useMutationAction } from '../../hooks/queries-actions';
 import { getImageLink } from '../../lib/storage';
 import { ApiErrorWithMessage } from '../../types/error';
+import Input from '../../components/ui/input';
+import Select from '../../components/ui/select';
+import TextArea from '../../components/ui/textarea';
 
 const ProductsPage: React.FC = () => {
     const navigate = useNavigate();
     const [showDeleteModal, setShowDeleteModal] = useState<Product | null>(null);
+    const [showEditModal, setShowEditModal] = useState<Product | null>(null);
     const [showStatusModal, setShowStatusModal] = useState<{product: Product, newStatus: boolean} | null>(null);
     const [apiError, setApiError] = useState<string | null>(null);
     const [apiSuccess, setApiSuccess] = useState<string | null>(null);
     const currency_info = useAppSelector(state => state.auth_store.portal?.shop.currency_info);
+    const shop = useAppSelector(state => state.auth_store.portal?.shop);
+
+    // Fetch categories for the select input
+    const { data: categories } = useGetQuery<Category[]>({
+        key: ['categories'],
+        url: `shops/${shop?.id}/categories`,
+    });
     const currencyIcon = currency_info?.currency_code || 'ج.م';
 
     // --- Data Fetching ---
@@ -31,6 +43,12 @@ const ProductsPage: React.FC = () => {
     });
 
     // --- Mutations ---
+    const { mutateAsync: updateProduct, isPending: isUpdating } = useMutationAction({
+        method: 'put',
+        url: `products/${showEditModal?.id}`,
+        key: ['products']
+    });
+
     const { mutateAsync: deleteProduct, isPending: isDeleting } = useMutationAction({
         method: 'delete',
         url: 'products'
@@ -43,10 +61,11 @@ const ProductsPage: React.FC = () => {
 
     // --- Handlers ---
     const handleAdd = () => navigate('/products/create');
-    const handleView = (id: number) => navigate(`/products/${id}`);
-    const handleEdit = (id: number) => navigate(`/products/${id}/edit`);
+
     
     const openDeleteConfirm = (product: Product) => setShowDeleteModal(product);
+    const openEditModal = (product: Product) => setShowEditModal(product);
+    const closeEditModal = () => setShowEditModal(null);
     const closeDeleteConfirm = () => setShowDeleteModal(null);
 
     const openStatusModal = (product: Product, newStatus: boolean) => {
@@ -105,8 +124,10 @@ const ProductsPage: React.FC = () => {
         { 
             key: 'name', 
             header: 'اسم المنتج', 
-            cellClassName: 'font-medium text-gray-800', 
-            render: (p) => p.name 
+            cellClassName: 'font-medium text-gray-800 cursor-pointer hover:text-primary', 
+            render: (p) => (
+                <div onClick={() => openEditModal(p)}>{p.name}</div>
+            )
         },
         { 
             key: 'product_category', 
@@ -137,22 +158,16 @@ const ProductsPage: React.FC = () => {
         {
             key: 'actions', 
             header: 'إجراءات', 
-            cellClassName: 'text-center w-[130px]',
+            cellClassName: 'text-center w-[100px]',
             render: (p) => (
                 <div className="flex justify-center items-center gap-1">
-                    <Button variant="ghost" size="sm" className="p-1 text-gray-600 hover:bg-gray-100" onClick={() => handleView(p.id)} title="عرض التفاصيل">
-                        <Eye size={16} />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="p-1 text-blue-600 hover:bg-blue-50" onClick={() => handleEdit(p.id)} title="تعديل">
-                        <Edit size={16} />
-                    </Button>
                     <Button variant="ghost" size="sm" className="p-1 text-red-600 hover:bg-red-50" onClick={() => openDeleteConfirm(p)} title="حذف">
                         <Trash2 size={16} />
                     </Button>
                 </div>
             )
         },
-    ], [currencyIcon, handleEdit, handleView, isUpdatingStatus]);
+    ], [currencyIcon, isUpdatingStatus]);
 
     // --- Toolbar Config ---
     const breadcrumbItems = [
@@ -192,6 +207,83 @@ const ProductsPage: React.FC = () => {
                 emptyStateMessage="لم يتم إضافة أي منتجات بعد."
                 rowKey="id"
             />
+
+            {/* Edit Product Modal */}
+            <Modal
+                isOpen={!!showEditModal}
+                onClose={closeEditModal}
+                title="تعديل المنتج"
+                size="lg"
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={closeEditModal}>إلغاء</Button>
+                        <Button
+                            variant="primary"
+                            onClick={async () => {
+                                if (!showEditModal) return;
+                                try {
+                                    await updateProduct({
+                                        data: {
+                                            name: showEditModal.name,
+                                            description: showEditModal.description,
+                                            price: showEditModal.price,
+                                            product_category_id: showEditModal.product_category_id,
+                                            is_active: showEditModal.is_active,
+                                        }
+                                    });
+                                    setApiSuccess(`تم تحديث المنتج "${showEditModal.name}" بنجاح`);
+                                    refetch();
+                                    closeEditModal();
+                                } catch (error) {
+                                    const errorMsg = error instanceof Error ? error.message : "فشل تحديث المنتج";
+                                    setApiError(errorMsg);
+                                }
+                            }}
+                            isLoading={isUpdating}
+                        >
+                            حفظ التغييرات
+                        </Button>
+                    </>
+                }
+            >
+                {showEditModal && (
+                    <div className="space-y-4">
+                        <Input
+                            label="اسم المنتج *"
+                            value={showEditModal.name}
+                            onChange={(e) => setShowEditModal(prev => prev ? {...prev, name: e.target.value} : null)}
+                            required
+                        />
+                        <Select
+                            label="التصنيف *"
+                            value={String(showEditModal.product_category_id)}
+                            onChange={(val) => setShowEditModal(prev => prev ? {...prev, product_category_id: +val} : null)}
+                            options={categories?.map(cat => ({ value: String(cat.id), label: cat.name })) || []}
+                        />
+                        <TextArea
+                            label="الوصف"
+                            value={showEditModal.description || ''}
+                            onChange={(e) => setShowEditModal(prev => prev ? {...prev, description: e.target.value} : null)}
+                            rows={3}
+                        />
+                        <Input
+                            label="السعر"
+                            type="number"
+                            value={showEditModal.price || ''}
+                            onChange={(e) => setShowEditModal(prev => prev ? {...prev, price: e.target.value} : null)}
+                            min="0"
+                            step="0.01"
+                            icon={DollarSign}
+                            suffix={currencyIcon}
+                        />
+                        <Switch
+                            label="الحالة (فعال)"
+                            checked={showEditModal.is_active}
+                            onChange={(e) => setShowEditModal(prev => prev ? {...prev, is_active: e.target.checked} : null)}
+                        />
+                    </div>
+                )}
+            </Modal>
 
             {/* Delete Confirmation Modal */}
             <Modal 

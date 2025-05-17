@@ -1,5 +1,3 @@
-// src/constants/socket_constants.ts
-import { io } from 'socket.io-client';
 
 // Socket server URL - replace with your actual server URL
 export const SOCKET_SERVER_URL = 'https://server.oorbis.top';
@@ -20,5 +18,3 @@ export const SOCKET_OPTIONS = {
   reconnectionDelay: 1000,
   autoConnect: true,
 };
-
-export const socketInstance = io(SOCKET_SERVER_URL, SOCKET_OPTIONS);

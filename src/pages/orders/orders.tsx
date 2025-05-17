@@ -98,7 +98,7 @@ const OrdersPage: React.FC = () => {
     });
 
     const { socket } = useSocket()
-    const shop_id = useAppSelector(state => state.auth_store.portal?.shop_id)
+    const shop_id = useAppSelector(state => state.auth_store.portal?.shop.id)
 
     socket?.on(SOCKET_EVENTS.ORDER_CREATED, (order: Order) => {
         if(order.shop_id == shop_id) {

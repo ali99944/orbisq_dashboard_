@@ -51,6 +51,7 @@ export const authSlice = createSlice({
             state.loading = false
             state.error = null
             removeAuthenticationToken()
+            localStorage.removeItem('shop_id')
         }
     },
     extraReducers: (builder) => {
@@ -60,12 +61,14 @@ export const authSlice = createSlice({
                 state.error = null
             })
             .addCase(loginPortal.fulfilled, (state, action) => {
+                
                 state.loading = false
                 state.error = null
                 state.token = action.payload.token
                 state.portal = action.payload.portal
 
                 saveAuthenticationToken(action.payload.token)
+                localStorage.setItem('shop_id', action.payload.portal.shop.id.toString()) 
             })
             .addCase(loginPortal.rejected, (state, action) => {
                 state.loading = false

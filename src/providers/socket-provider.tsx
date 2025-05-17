@@ -1,12 +1,11 @@
 // src/providers/socket-provider.tsx
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Socket } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
-import { SOCKET_EVENTS, socketInstance } from '../constants/socket_constants';
+import { SOCKET_EVENTS, SOCKET_OPTIONS, SOCKET_SERVER_URL } from '../constants/socket_constants';
 import ToastNotification from '../components/ui/toast-notification';
 import { Order } from '../types/order';
-import { useAppSelector } from '../hooks/redux';
 
 // Create notification sound
 const notificationSound = new Audio('/tone.mp3');
@@ -35,11 +34,11 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [notification, setNotification] = useState<{ show: boolean; order?: Order }>({ show: false });
   const navigate = useNavigate();
-  const shop_id = useAppSelector(state => state.auth_store.portal?.shop_id)
 
   useEffect(() => {
     // Initialize socket connection
     
+    const socketInstance = io(SOCKET_SERVER_URL, SOCKET_OPTIONS);
     setSocket(socketInstance);
 
     // Connection event handlers
@@ -60,7 +59,10 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
 
     // Order created event handler
     socketInstance.on(SOCKET_EVENTS.ORDER_CREATED, (order: Order) => {
-      if(order.shop_id == shop_id) {
+
+      const shop_id = localStorage.getItem('shop_id') ?? '';
+     
+      if(order.shop_id.toString() == shop_id) {
         // Play notification sound
         notificationSound.play().catch(err => console.error('Error playing notification sound:', err));
         
@@ -101,7 +103,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         socketInstance.off(SOCKET_EVENTS.ORDER_CREATED);
       }
     };
-  }, [navigate, shop_id]);
+  }, [navigate]);
 
   // Handle closing the toast notification
   const handleCloseNotification = () => {

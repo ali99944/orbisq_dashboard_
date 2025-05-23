@@ -125,9 +125,9 @@ const DashboardHomePage: React.FC = () => {
     const dashboardKPIs = useMemo(() => overview ? {
         totalSales: {
             title: "إجمالي المبيعات",
-            value: overview.total_sales.value,
-            unit: overview.total_sales.currency,
-            trendValue: overview.total_sales.change_percentage,
+            value: overview?.total_sales.value,
+            unit: overview?.total_sales.currency,
+            trendValue: overview?.total_sales.change_percentage,
             icon: DollarSign,
             iconColorClass: 'text-green-500',
             bgColorClass: 'bg-green-50',
@@ -135,8 +135,8 @@ const DashboardHomePage: React.FC = () => {
         },
         totalOrders: {
             title: "إجمالي الطلبات",
-            value: +overview.total_orders.count + +overview.order_status_trends?.total_rejected_orders.count,
-            trendValue: overview.total_orders.change_percentage,
+            value: overview?.total_orders.count,
+            trendValue: overview?.total_orders.change_percentage,
             icon: ShoppingCart,
             iconColorClass: 'text-blue-500',
             bgColorClass: 'bg-blue-50',
@@ -144,17 +144,17 @@ const DashboardHomePage: React.FC = () => {
         },
         avgOrderValue: {
             title: "متوسط قيمة الطلب",
-            value: overview.average_order_value.value,
-            unit: overview.average_order_value.currency,
-            trendValue: overview.average_order_value.change_percentage,
+            value: overview?.average_order_value.value,
+            unit: overview?.average_order_value.currency,
+            trendValue: overview?.average_order_value.change_percentage,
             icon: Percent,
             iconColorClass: 'text-indigo-500',
             bgColorClass: 'bg-indigo-50'
         },
         activeCustomers: {
             title: "العملاء (هذا " + (timePeriod === 'day' ? 'اليوم' : timePeriod === 'week' ? 'الأسبوع' : 'الشهر') + ")",
-            value: overview.customers.count,
-            trendValue: overview.customers.change_percentage,
+            value: overview?.customers.count,
+            trendValue: overview?.customers.change_percentage,
             icon: Users,
             iconColorClass: 'text-sky-500',
             bgColorClass: 'bg-sky-50',
@@ -326,7 +326,7 @@ const DashboardHomePage: React.FC = () => {
                         <Card title="الأصناف الأكثر طلباً" className="md:col-span-1">
                             <ul className="space-y-1.5 max-h-80 overflow-y-auto pr-1 text-sm">
                                 {topCategories?.top_categories?.map((category) => (
-                                    <li key={category.name} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
+                                    <li key={category.category_id} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
                                         <span className="text-gray-700 truncate max-w-[65%]">{category.name}</span>
                                         <div className="flex items-center gap-2">
                                             {/* <span className={`text-xs ${category.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>

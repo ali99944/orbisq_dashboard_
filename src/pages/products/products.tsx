@@ -53,7 +53,7 @@ const ProductsPage: React.FC = () => {
 
     const { mutateAsync: deleteProduct, isPending: isDeleting } = useMutationAction({
         method: 'delete',
-        url: 'products'
+        url: `products/${showDeleteModal?.id}`
     });
 
     const { mutateAsync: updateProductStatus, isPending: isUpdatingStatus } = useMutationAction({
@@ -79,9 +79,7 @@ const ProductsPage: React.FC = () => {
         if (!showDeleteModal) return;
         
         try {
-            await deleteProduct({
-                url: `products/${showDeleteModal.id}`
-            });
+            await deleteProduct({});
             setApiSuccess(`تم حذف المنتج "${showDeleteModal.name}" بنجاح`);
             refetch();
             closeDeleteConfirm();
@@ -126,21 +124,32 @@ const ProductsPage: React.FC = () => {
         { 
             key: 'name', 
             header: 'اسم المنتج', 
-            cellClassName: 'font-medium text-gray-800 cursor-pointer hover:text-primary', 
+            cellClassName: 'font-medium text-gray-800 cursor-pointer hover:text-primary break-words', 
             render: (p) => (
-                <div onClick={() => openEditModal(p)}>{p.name}</div>
+                <div className='break-words' onClick={() => openEditModal(p)}>{p.name}</div>
+            )
+        },
+        { 
+            key: 'description',
+            header: 'وصف المنتج', 
+            cellClassName: 'font-medium text-gray-800 cursor-pointer hover:text-primary break-words', 
+            render: (p) => (
+                <div className='max-w-xs break-words' onClick={() => openEditModal(p)}>{p?.description ?? '-'}</div>
             )
         },
         { 
             key: 'product_category', 
             header: 'التصنيف', 
-            render: (p) => p.product_category?.name || '-' 
+            cellClassName: 'text-gray-500 break-words',
+            render: (p) => <div className='break-words'>{p.product_category?.name || '-'}</div>
         },
-        {
+        { 
             key: 'price', 
             header: 'السعر', 
-            cellClassName: 'text-sm',
-            render: (p) => p.price ? `${parseFloat(String(p.price)).toFixed(2)} ${currencyIcon}` : (p.pricing_type === 'dynamic' ? 'ديناميكي' : '-')
+            cellClassName: 'text-gray-500', 
+            render: (p) => {
+                return `${currencyIcon} ${p.price}`
+            }
         },
         {
             key: 'is_active', 
